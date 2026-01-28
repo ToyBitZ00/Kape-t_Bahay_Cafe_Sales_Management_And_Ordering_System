@@ -57,8 +57,16 @@ def create_login_window():
                                            command=toggle_password)
     showpasswordcheckbox.pack(padx=(0,80), pady=(0,20))
 
+    loginButton = ctk.CTkButton(rightframe, text="Login", font=ctk.CTkFont(size=20), width=200, height=50, fg_color="#1E6F43", hover_color="#14532D")
+    loginButton.pack(pady=(0,10))
+
+    signupLabel = ctk.CTkLabel(rightframe, text="Don't have an account?", font=ctk.CTkFont(size=14), fg_color="#3032AA")    
+    signupLabel.pack(pady=(10,5))
+    signupButton = ctk.CTkButton(rightframe, text="Sign Up", font=ctk.CTkFont(size=16), width=100, height=40, fg_color="#1E6F43", hover_color="#14532D")
+    signupButton.pack()
 
     return loginwindow
+
 # Also replicate this part for other windows you will create in the future.
 loginWindowCreation = create_login_window()
 
