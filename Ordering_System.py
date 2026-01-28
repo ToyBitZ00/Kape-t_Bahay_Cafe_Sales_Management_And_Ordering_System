@@ -16,7 +16,7 @@ def create_login_window():
     leftframe = ctk.CTkFrame(loginwindow, fg_color="#2A8F5C")
     leftframe.pack(side="left",fill="both", expand=True)
 
-    greetingLabel = ctk.CTkLabel(leftframe, text="Kape'Bahay", font=ctk.CTkFont(size=40, weight="bold"), fg_color="#2A8F5C")
+    greetingLabel = ctk.CTkLabel(leftframe, text="Kape't Bahay", font=ctk.CTkFont(size=40, weight="bold"), fg_color="#2A8F5C")
     greetingLabel.pack(pady=(100,10))
 
     createOrderButton = ctk.CTkButton(leftframe, text="Create Order", font=ctk.CTkFont(size=20), width=200, height=50, fg_color="#1E6F43", hover_color="#14532D")
