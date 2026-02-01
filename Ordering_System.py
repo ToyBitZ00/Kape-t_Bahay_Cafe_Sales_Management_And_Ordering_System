@@ -6,6 +6,15 @@ ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("blue")
 
 
+# This block of code is what displays, withdraw and hides the windows.
+
+def show_cart_window(current=None):
+    loginWindowCreation.withdraw()  # Hide the current window
+    cartWIndowCreation.deiconify()  # Show the current window again when cart window is closed
+
+
+
+
 def create_login_window():
     loginwindow = ctk.CTk()
     loginwindow.geometry("900x700") # Window size
@@ -18,9 +27,6 @@ def create_login_window():
 
     greetingLabel = ctk.CTkLabel(leftframe, text="Kape't Bahay", font=ctk.CTkFont(size=40, weight="bold"), fg_color="#2A8F5C")
     greetingLabel.pack(pady=(100,10))
-
-    createOrderButton = ctk.CTkButton(leftframe, text="Create Order", font=ctk.CTkFont(size=20), width=200, height=50, fg_color="#1E6F43", hover_color="#14532D")
-    createOrderButton.pack(pady=(0, 200), side="bottom")
 
     # Right Frame
     rightframe = ctk.CTkFrame(loginwindow, fg_color="#3032AA")
@@ -57,7 +63,14 @@ def create_login_window():
                                            command=toggle_password)
     showpasswordcheckbox.pack(padx=(0,80), pady=(0,20))
 
-    loginButton = ctk.CTkButton(rightframe, text="Login", font=ctk.CTkFont(size=20), width=200, height=50, fg_color="#1E6F43", hover_color="#14532D")
+    loginButton = ctk.CTkButton(rightframe, 
+                                text="Login", 
+                                font=ctk.CTkFont(size=20), 
+                                width=200, 
+                                height=50, 
+                                fg_color="#1E6F43", 
+                                hover_color="#14532D",
+                                command=lambda: show_cart_window(loginwindow))
     loginButton.pack(pady=(0,10))
 
     signupLabel = ctk.CTkLabel(rightframe, text="Don't have an account?", font=ctk.CTkFont(size=14), fg_color="#3032AA")    
@@ -67,8 +80,22 @@ def create_login_window():
 
     return loginwindow
 
+
+def cart_window():
+        cartwindow = ctk.CTkToplevel()
+        cartwindow.geometry("800x600")
+        cartwindow.title("Kape'Bahay Ordering System - Cart")
+        # Further implementation of the cart window goes here.
+
+        
+
+
+
+        return cartwindow
+
 # Also replicate this part for other windows you will create in the future.
 loginWindowCreation = create_login_window()
+cartWIndowCreation = cart_window()
 
 # Do not mess with this part.
 loginWindowCreation.mainloop()
