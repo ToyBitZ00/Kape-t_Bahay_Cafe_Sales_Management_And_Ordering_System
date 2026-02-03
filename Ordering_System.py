@@ -10,7 +10,7 @@ ctk.set_default_color_theme("blue")
 
 def show_cart_window(current=None):
     loginWindowCreation.withdraw()  # Hide the current window
-    cartWIndowCreation.deiconify()  # Show the current window again when cart window is closed
+    cartWIndowCreation.deiconify()  # Show the cart window
 
 
 
