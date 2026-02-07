@@ -4,26 +4,13 @@ Café Ordering System Window Functions
 
 1.	Portal Window / Login Window: Authenticate Username and Password Credentials
 
-2.	Create Order Window / Cart Window
-        Select Type of Coffee
-        Select Size
-        Set Quantity
-        Show Subtotal 
-        Finalize Order and Add to cart
+2.	Create Order Window / Cart Window: Select Type of Coffee | Select Size | Set Quantity | Show Subtotal | Finalize Order and Add to cart
 
-3.	Customer Orders Window / Orders Window
-        View all pending orders
-        Select a pending order to view its contents (Potentially a New Window)
-        Select an order to start preparing
+3.	Customer Orders Window / Orders Window: View all pending orders | Select a pending order to view its contents (New Window) | Select an order to start preparing
 
-4.	Beverage Management Window
-        Add Coffee Beverages
-        Change prices and sizes
-        Enable/Disable unavailable items
+4.	Beverage Management Window: Add Coffee Beverages | Change prices and sizes | Enable/Disable unavailable items
 
-5.	Cashier / Admin Profile Window
-        View Cashier / Admin Profile Contents
-        Update user credentials (New Window)
+5.	Cashier / Admin Profile Window: View Cashier | Admin Profile Contents | Update user credentials (New Window)
 
 6.	Sales Report Window
     On Cashier Side:
