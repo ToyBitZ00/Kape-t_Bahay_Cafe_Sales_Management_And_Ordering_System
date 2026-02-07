@@ -12,15 +12,9 @@ Café Ordering System Window Functions
 
 5.	Cashier / Admin Profile Window: View Cashier | Admin Profile Contents | Update user credentials (New Window)
 
-6.	Sales Report Window
-    On Cashier Side:
-        Daily/Weekly Sales Report
-        View popular Beverage of the Month
-        Total Order Counts
-
-    On Admin Side (include Cashier Side):
-        Total Revenue
-        Bar Graph Statistics of Monthly Activity 
+6.	Sales Report Window:
+On Cashier Side: (Daily/Weekly Sales Report | View popular Beverage of the Month | Total Order Counts)
+On Admin Side (include Cashier Side): (Total Revenue | Bar Graph Statistics of Monthly Activity) 
 
 
 
@@ -28,6 +22,7 @@ IMPORTANT NOTES: Basahin para maintindihan ko mga code ninyo.
 You can use ChatGPT how to use CustomTkinter it's similar to Tkinter but with more modern looks.
 
 Use Camel Case for naming conventions of variables and functions, so that it is easier to read. 
+
 Example: firstLetterIsAlwaysCapitalCaseExceptForTheFirstWord
 
 NOTICE: Whenever you create a new window, make sure its placed inside a "def" function and name them properly to avoid confusion.
