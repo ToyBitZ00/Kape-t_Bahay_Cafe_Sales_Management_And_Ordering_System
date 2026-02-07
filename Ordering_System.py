@@ -1,7 +1,6 @@
 import customtkinter as ctk
 from tkinter import messagebox
 from PIL import Image, ImageTk
-import os
 
 # This block of code is what displays, withdraw and hides the windows.
 
@@ -18,7 +17,8 @@ def create_login_window():
     loginwindow.configure(bg="#00C3FF") # Background color
     #loginwindow.iconbitmap("logo file path here") # the icon file must be in .ico format and must be placed in the same folder as the system
 
-    background_image = Image.open("C:\\Users\\Admin\\Desktop\\My Files\\3rd Year - BSCS\\2nd Semester\\Final Project System (Github)\\icons\\login_background.png") # the background image must be in .png format and must be placed in the same folder as the system
+    background_image = ctk.CTkImage(light_image=Image.open("login_background.png")) # the background image must be in .png format and must be placed in the same folder as the system
+
 
     MainFrame = ctk.CTkFrame(loginwindow, 
                              fg_color="#00C3FF",
