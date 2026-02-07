@@ -2,8 +2,7 @@ This List is Long Please read all of it.
 
 Café Ordering System Window Functions
 
-1.	Portal Window / Login Window
-        Authenticate Username and Password Credentials
+1.	Portal Window / Login Window: Authenticate Username and Password Credentials
 
 2.	Create Order Window / Cart Window
         Select Type of Coffee
