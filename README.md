@@ -1,8 +1,8 @@
                             
                             
                             TABLE OF CONTENTS
-Café Ordering System Window Functions                               8
-IMPORTANT NOTES                                                     46
+Line 8 - Café Ordering System Window Functions
+Line 46 - IMPORTANT NOTES
 
 
 Café Ordering System Window Functions
