@@ -48,3 +48,5 @@ Example: firstLetterIsAlwaysCapitalCaseExceptForTheFirstWord
 NOTICE: Whenever you create a new window, make sure its placed inside a "def" function and name them properly to avoid confusion.
 USE "create_[window name]_window()" format when naming the function.
 Example: create_login_window(), create_main_window(), create_order_window(), etc.
+
+All images will be placed in the parent folder of the project.
