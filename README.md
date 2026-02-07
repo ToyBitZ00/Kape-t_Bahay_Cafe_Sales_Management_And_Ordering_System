@@ -1,4 +1,3 @@
-Above this, CLICK "Code" to read properly
 This List is Long Please read all of it.
 
 Café Ordering System Window Functions
