@@ -1,10 +1,7 @@
 import customtkinter as ctk
 from tkinter import messagebox
 from PIL import Image, ImageTk
-
-ctk.set_appearance_mode("dark")
-ctk.set_default_color_theme("blue")
-
+import os
 
 # This block of code is what displays, withdraw and hides the windows.
 
@@ -13,26 +10,40 @@ def show_cart_window(current=None):
     cartWIndowCreation.deiconify()  # Show the cart window
 
 
-
-
 def create_login_window():
     loginwindow = ctk.CTk()
     loginwindow.geometry("900x700") # Window size
     loginwindow.title("Kape'Bahay Ordering System - Login") # Window Title
+    loginwindow.minsize(1280, 720) # Disable window resizing
+    loginwindow.configure(bg="#00C3FF") # Background color
     #loginwindow.iconbitmap("logo file path here") # the icon file must be in .ico format and must be placed in the same folder as the system
 
+    background_image = Image.open("C:\\Users\\Admin\\Desktop\\My Files\\3rd Year - BSCS\\2nd Semester\\Final Project System (Github)\\icons\\login_background.png") # the background image must be in .png format and must be placed in the same folder as the system
+
+    MainFrame = ctk.CTkFrame(loginwindow, 
+                             fg_color="#00C3FF",
+                             image=background_image)
+    MainFrame.pack(fill="both", expand=True)
+
     # Left Frame
-    leftframe = ctk.CTkFrame(loginwindow, fg_color="#2A8F5C")
+    leftframe = ctk.CTkFrame(MainFrame, fg_color="#00C3FF")
     leftframe.pack(side="left",fill="both", expand=True)
 
-    greetingLabel = ctk.CTkLabel(leftframe, text="Kape't Bahay", font=ctk.CTkFont(size=40, weight="bold"), fg_color="#2A8F5C")
-    greetingLabel.pack(pady=(100,10))
+    greetingLabel = ctk.CTkLabel(leftframe, 
+                                 text="Kape't Bahay", 
+                                 font=ctk.CTkFont(size=40, weight="bold"))
+    greetingLabel.pack(pady=(100,0))
 
     # Right Frame
-    rightframe = ctk.CTkFrame(loginwindow, fg_color="#3032AA")
-    rightframe.pack(side="right", fill="both", expand=True)
+    rightframe = ctk.CTkFrame(MainFrame, 
+                              fg_color="#FFFFFF",
+                              width=400,
+                              height=600)
+    rightframe.pack(side="right", padx=100, pady=100, fill="both", expand=True)
 
-    loginLabel = ctk.CTkLabel(rightframe, text="SIGN IN", font=ctk.CTkFont(size=30, weight="bold"), fg_color="#3032AA")
+    loginLabel = ctk.CTkLabel(rightframe, 
+                              text="SIGN IN", 
+                              font=ctk.CTkFont(size=30, weight="bold"))
     loginLabel.pack(pady=(100,10))
 
     usernameEntry = ctk.CTkEntry(rightframe, placeholder_text="Username", width=200, height=40, font=ctk.CTkFont(size=16))
