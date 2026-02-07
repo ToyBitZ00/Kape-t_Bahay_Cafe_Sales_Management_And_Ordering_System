@@ -97,5 +97,10 @@ def cart_window():
 loginWindowCreation = create_login_window()
 cartWIndowCreation = cart_window()
 
+
+# Hides other window at the startup of the program.
+cartWIndowCreation.withdraw()  
+
+
 # Do not mess with this part.
 loginWindowCreation.mainloop()
