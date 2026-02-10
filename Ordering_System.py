@@ -104,15 +104,15 @@ def cart_window():
     items_frame.grid_columnconfigure((0, 1, 2), weight=1)
 
     # Header
-    title = ctk.CTkLabel(items_frame, text="Desserts", font=("Arial", 22, "bold"))
+    title = ctk.CTkLabel(items_frame, text="COFFEES", font=("Arial", 22, "bold"))
     title.grid(row=0, column=0, columnspan=3, sticky="w", padx=10, pady=(10, 5))
 
     # Category buttons
-    categories = ["Cakes", "Pastry", "Ice Cream", "Pancakes", "Vegan"]
+    categories = ["MATCHA", "AMERICANO", "JAVA CHIP", "SALTED CARAMEL", "3in1"]
     for i, cat in enumerate(categories):
         btn = ctk.CTkButton(
             items_frame,
-            text=cat,
+            text=cat, 
             width=100,
             height=32,
             corner_radius=20,
