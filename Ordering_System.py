@@ -1,3 +1,4 @@
+from email.mime import image
 import customtkinter as ctk
 from tkinter import messagebox
 from PIL import Image, ImageTk
@@ -14,36 +15,29 @@ def create_login_window():
     loginwindow.geometry("900x700") # Window size
     loginwindow.title("Kape'Bahay Ordering System - Login") # Window Title
     loginwindow.minsize(1280, 720) # Disable window resizing
-    loginwindow.configure(bg="#00C3FF") # Background color
-    #loginwindow.iconbitmap("logo file path here") # the icon file must be in .ico format and must be placed in the same folder as the system
-
-    background_image = ctk.CTkImage(light_image=Image.open("login_background.png")) # the background image must be in .png format and must be placed in the same folder as the system
-
-
-    MainFrame = ctk.CTkFrame(loginwindow, 
-                             fg_color="#00C3FF",
-                             image=background_image)
-    MainFrame.pack(fill="both", expand=True)
+    loginwindow.configure(bg="#FFFFFF") # Window background color
+    #loginwindow.iconbitmap("logo file path here") the icon file must be in .ico format and must be placed in the same folder as the system
 
     # Left Frame
-    leftframe = ctk.CTkFrame(MainFrame, fg_color="#00C3FF")
+    leftframe = ctk.CTkFrame(loginwindow, fg_color="#1E6F43")
     leftframe.pack(side="left",fill="both", expand=True)
 
     greetingLabel = ctk.CTkLabel(leftframe, 
+                                 bg_color="transparent",
                                  text="Kape't Bahay", 
                                  font=ctk.CTkFont(size=40, weight="bold"))
     greetingLabel.pack(pady=(100,0))
 
     # Right Frame
-    rightframe = ctk.CTkFrame(MainFrame, 
+    rightframe = ctk.CTkFrame(loginwindow, 
                               fg_color="#FFFFFF",
-                              width=400,
-                              height=600)
-    rightframe.pack(side="right", padx=100, pady=100, fill="both", expand=True)
+                              corner_radius=20)
+    rightframe.pack(side="right", padx=(0, 100), pady=100, fill="both", expand=True)
 
     loginLabel = ctk.CTkLabel(rightframe, 
                               text="SIGN IN", 
-                              font=ctk.CTkFont(size=30, weight="bold"))
+                              font=ctk.CTkFont(size=30, weight="bold"),
+                              fg_color="transparent")
     loginLabel.pack(pady=(100,10))
 
     usernameEntry = ctk.CTkEntry(rightframe, placeholder_text="Username", width=200, height=40, font=ctk.CTkFont(size=16))
@@ -93,16 +87,122 @@ def create_login_window():
 
 
 def cart_window():
-        cartwindow = ctk.CTkToplevel()
-        cartwindow.geometry("800x600")
-        cartwindow.title("Kape'Bahay Ordering System - Cart")
-        # Further implementation of the cart window goes here.
+    cartwindow = ctk.CTkToplevel()
+    cartwindow.geometry("800x600")
+    cartwindow.title("Kape'Bahay Ordering System - Cart")
+     # Further implementation of the cart window goes here.  
 
-        
+    # ================== MAIN LAYOUT ==================
+    cartwindow.grid_columnconfigure(0, weight=3)
+    cartwindow.grid_columnconfigure(1, weight=1)
+    cartwindow.grid_rowconfigure(0, weight=1)
 
+    # ================== LEFT: ITEMS SECTION ==================
+    items_frame = ctk.CTkFrame(cartwindow, corner_radius=15)
+    items_frame.grid(row=0, column=0, padx=15, pady=15, sticky="nsew")
 
+    items_frame.grid_columnconfigure((0, 1, 2), weight=1)
 
-        return cartwindow
+    # Header
+    title = ctk.CTkLabel(items_frame, text="Desserts", font=("Arial", 22, "bold"))
+    title.grid(row=0, column=0, columnspan=3, sticky="w", padx=10, pady=(10, 5))
+
+    # Category buttons
+    categories = ["Cakes", "Pastry", "Ice Cream", "Pancakes", "Vegan"]
+    for i, cat in enumerate(categories):
+        btn = ctk.CTkButton(
+            items_frame,
+            text=cat,
+            width=100,
+            height=32,
+            corner_radius=20,
+            fg_color="#2b2b2b" if cat == "Cakes" else "#3a3a3a"
+        )
+        btn.grid(row=1, column=i % 3, padx=5, pady=5, sticky="w")
+
+    # Sample product cards
+    products = [
+        ("Raspberry Tart", "₱120.00"),
+        ("Chocolate Tart", "₱150.00"),
+        ("Fruit Tart", "₱130.00"),
+        ("Chocolate Cake", "₱450.00"),
+        ("Mini Chocolate Cake", "₱180.00"),
+    ]
+
+    row_index = 2
+    col_index = 0
+
+    for name, price in products:
+        card = ctk.CTkFrame(items_frame, corner_radius=15)
+        card.grid(row=row_index, column=col_index, padx=10, pady=10, sticky="nsew")
+
+        img_placeholder = ctk.CTkLabel(card, text="Image", width=140, height=90, fg_color="#444")
+        img_placeholder.pack(padx=10, pady=10)
+
+        lbl_name = ctk.CTkLabel(card, text=name, font=("Arial", 14, "bold"))
+        lbl_name.pack(pady=(0, 2))
+
+        lbl_price = ctk.CTkLabel(card, text=price, font=("Arial", 12))
+        lbl_price.pack()
+
+        add_btn = ctk.CTkButton(card, text="+", width=32, height=32, corner_radius=16)
+        add_btn.pack(pady=8)
+
+        col_index += 1
+        if col_index > 2:
+            col_index = 0
+            row_index += 1
+
+    # ================== RIGHT: CART SUMMARY ==================
+    cart_frame = ctk.CTkFrame(cartwindow, corner_radius=15)
+    cart_frame.grid(row=0, column=1, padx=(0, 15), pady=15, sticky="nsew")
+
+    cart_frame.grid_columnconfigure(0, weight=1)
+
+    cart_title = ctk.CTkLabel(cart_frame, text="Current Order", font=("Arial", 20, "bold"))
+    cart_title.pack(pady=10)
+
+    # Order items
+    order_items = [
+        ("Raspberry Tart", "₱120.00"),
+        ("Lemon Tart", "₱90.00"),
+    ]
+
+    for item, price in order_items:
+        item_frame = ctk.CTkFrame(cart_frame, fg_color="#2b2b2b", corner_radius=10)
+        item_frame.pack(fill="x", padx=10, pady=5)
+
+        name_lbl = ctk.CTkLabel(item_frame, text=item)
+        name_lbl.pack(side="left", padx=10)
+
+        price_lbl = ctk.CTkLabel(item_frame, text=price)
+        price_lbl.pack(side="right", padx=10)
+
+    # Summary
+    summary_frame = ctk.CTkFrame(cart_frame, fg_color="transparent")
+    summary_frame.pack(fill="x", padx=10, pady=15)
+
+    ctk.CTkLabel(summary_frame, text="Subtotal: ₱210.00").pack(anchor="w")
+    ctk.CTkLabel(summary_frame, text="Service Charge: 20%").pack(anchor="w")
+    ctk.CTkLabel(summary_frame, text="Tax: ₱15.00").pack(anchor="w")
+
+    total_lbl = ctk.CTkLabel(
+        summary_frame,
+        text="Total: ₱225.00",
+        font=("Arial", 16, "bold")
+    )
+    total_lbl.pack(anchor="w", pady=(10, 0))
+
+    # Continue Button
+    continue_btn = ctk.CTkButton(
+        cart_frame,
+        text="Continue",
+        height=45,
+        corner_radius=20
+    )
+    continue_btn.pack(fill="x", padx=15, pady=15)
+
+    return cartwindow
 
 # Also replicate this part for other windows you will create in the future.
 loginWindowCreation = create_login_window()
