@@ -167,6 +167,9 @@ def cart_window():
         row_index = 2
         col_index = 0
 
+
+
+
         for id, name, price in products:
             if selected_category is None or id == selected_category:
 
