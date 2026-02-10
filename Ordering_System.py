@@ -111,6 +111,10 @@ def cart_window():
     title.grid(row=0, column=0, columnspan=3, sticky="w", padx=10, pady=(10, 5))
 
 
+    def filter_products(choice):
+        category_index = categories.index(choice)
+        display_products(str(category_index))
+
     # Category buttons
 
     category_var = ctk.StringVar()
@@ -124,61 +128,69 @@ def cart_window():
                                        state="readonly",
                                        width=170,
                                        height=30,
+                                       command=filter_products
                                        )
     categories_Combo.grid(row=1, column=0, padx=10, pady=10, sticky="w")
 
-
-
-
-    # Sample product cards
     products = [
-        ("0", "Milo Malt", "₱155.00"),
-        ("0", "White salted", "₱155.00"),
-        ("0", "Caramel", "₱145.00"),
-        ("0","Mocha", "₱145.00"),
-        ("1","Classic Spanish", "₱110.00"),
-        ("1","Spanish cinnamon", "₱115.00"),
-        ("1","Spanish Mocha", "₱115.00"),\
-        ("2","Classic Seasalt", "₱115.00"),
-        ("2","Seasalt Caramel", "₱120.00"),
-        ("2","Hazelnut Paline", "₱120.00"),
-        ("3","Black Irish", "₱105.00"),
-        ("3","Black Seasalt", "₱110.00"),
-        ("3","Black Vanilla Cream", "₱110.00"),
-        ("4","Choco Cinnamon", "₱110.00"),
-        ("4","Choco Caramel", "₱110.00"),
-        ("4","Choco Strawberry", "₱120.00"),
-        ("5","Traditional Matcha", "₱105.00"),
-        ("5","Creamy Matcha", "₱120.00"),
-        ("5","Matcha Strawberry", "₱120.00"),
-        ("5","Choco Matcha", "₱120.00"),
-    
+            ("0", "Milo Malt", "₱155.00"),
+            ("0", "White salted", "₱155.00"),
+            ("0", "Caramel", "₱145.00"),
+            ("0","Mocha", "₱145.00"),
+            ("1","Classic Spanish", "₱110.00"),
+            ("1","Spanish cinnamon", "₱115.00"),
+            ("1","Spanish Mocha", "₱115.00"),\
+            ("2","Classic Seasalt", "₱115.00"),
+            ("2","Seasalt Caramel", "₱120.00"),
+            ("2","Hazelnut Paline", "₱120.00"),
+            ("3","Black Irish", "₱105.00"),
+            ("3","Black Seasalt", "₱110.00"),
+            ("3","Black Vanilla Cream", "₱110.00"),
+            ("4","Choco Cinnamon", "₱110.00"),
+            ("4","Choco Caramel", "₱110.00"),
+            ("4","Choco Strawberry", "₱120.00"),
+            ("5","Traditional Matcha", "₱105.00"),
+            ("5","Creamy Matcha", "₱120.00"),
+            ("5","Matcha Strawberry", "₱120.00"),
+            ("5","Choco Matcha", "₱120.00"),
     ]
 
-    row_index = 2
-    col_index = 0
+    
 
-    for id, name, price in products:
-        card = ctk.CTkFrame(items_frame, 
-                            fg_color="#505050", corner_radius=10)
-        card.grid(row=row_index, column=col_index, padx=10, pady=10, sticky="nsew")
 
-        img_placeholder = ctk.CTkLabel(card, text="Image", width=140, height=30, fg_color="#444")
-        img_placeholder.pack(padx=10, pady=10)
+    def display_products(selected_category=None):
 
-        lbl_name = ctk.CTkLabel(card, text=name, font=("Arial", 14, "bold"))
-        lbl_name.pack(pady=(0, 2))
+        for widget in items_frame.winfo_children():
+            if int(widget.grid_info().get("row", 0)) >= 2:
+                widget.destroy()
 
-        lbl_price = ctk.CTkLabel(card, text=price, font=("Arial", 12))
-        lbl_price.pack()
+        row_index = 2
+        col_index = 0
 
-        add_btn = ctk.CTkButton(card, text="+", width=32, height=32, corner_radius=16)
-        add_btn.pack(pady=8)
+        for id, name, price in products:
+            if selected_category is None or id == selected_category:
 
-        col_index += 1
-        if col_index > 2:
-            col_index = 0
-            row_index += 1
+                card = ctk.CTkFrame(items_frame, fg_color="#505050", corner_radius=10)
+                card.grid(row=row_index, column=col_index, padx=10, pady=10, sticky="nsew")
+
+                img_placeholder = ctk.CTkLabel(card, text="Image", width=140, height=30, fg_color="#444")
+                img_placeholder.pack(padx=10, pady=10)
+
+                lbl_name = ctk.CTkLabel(card, text=name, font=("Arial", 14, "bold"))
+                lbl_name.pack(pady=(0, 2))
+
+                lbl_price = ctk.CTkLabel(card, text=price)
+                lbl_price.pack()
+
+                add_btn = ctk.CTkButton(card, text="+", width=32, height=32)
+                add_btn.pack(pady=8)
+
+                col_index += 1
+                if col_index > 2:
+                    col_index = 0
+                    row_index += 1
+
+    display_products() 
 
     # ================== RIGHT: CART SUMMARY ==================
     cart_frame = ctk.CTkFrame(cartwindow, corner_radius=15)
