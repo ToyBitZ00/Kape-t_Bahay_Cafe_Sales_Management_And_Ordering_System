@@ -98,45 +98,72 @@ def cart_window():
     cartwindow.grid_rowconfigure(0, weight=1)
 
     # ================== LEFT: ITEMS SECTION ==================
-    items_frame = ctk.CTkFrame(cartwindow, corner_radius=15)
+    items_frame = ctk.CTkScrollableFrame(cartwindow, 
+                                         width=500,
+                                         height=600,
+                                         corner_radius=15)
     items_frame.grid(row=0, column=0, padx=15, pady=15, sticky="nsew")
 
-    items_frame.grid_columnconfigure((0, 1, 2), weight=1)
+    items_frame.grid_columnconfigure((0, 1, 2, 3, 4), weight=1)
 
     # Header
     title = ctk.CTkLabel(items_frame, text="COFFEES", font=("Arial", 22, "bold"))
     title.grid(row=0, column=0, columnspan=3, sticky="w", padx=10, pady=(10, 5))
 
+
     # Category buttons
-    categories = ["MATCHA", "AMERICANO", "JAVA CHIP", "SALTED CARAMEL", "3in1"]
-    for i, cat in enumerate(categories):
-        btn = ctk.CTkButton(
-            items_frame,
-            text=cat, 
-            width=100,
-            height=32,
-            corner_radius=20,
-            fg_color="#2b2b2b" if cat == "Cakes" else "#3a3a3a"
-        )
-        btn.grid(row=1, column=i % 3, padx=5, pady=5, sticky="w")
+
+    category_var = ctk.StringVar()
+
+    categories = ["FAVORITES", "SPANISH SERIES", "SAESALT SERIES", "BLACK SERIES", "CHOCO SERIES", "MATCHA SERIES"]
+
+    categories_Combo = ctk.CTkComboBox(items_frame,
+                                       font=("Arial",12, "bold"),
+                                       variable=category_var,
+                                       values=list(categories),
+                                       state="readonly",
+                                       width=170,
+                                       height=30,
+                                       )
+    categories_Combo.grid(row=1, column=0, padx=10, pady=10, sticky="w")
+
+
+
 
     # Sample product cards
     products = [
-        ("Raspberry Tart", "₱120.00"),
-        ("Chocolate Tart", "₱150.00"),
-        ("Fruit Tart", "₱130.00"),
-        ("Chocolate Cake", "₱450.00"),
-        ("Mini Chocolate Cake", "₱180.00"),
+        ("0", "Milo Malt", "₱155.00"),
+        ("0", "White salted", "₱155.00"),
+        ("0", "Caramel", "₱145.00"),
+        ("0","Mocha", "₱145.00"),
+        ("1","Classic Spanish", "₱110.00"),
+        ("1","Spanish cinnamon", "₱115.00"),
+        ("1","Spanish Mocha", "₱115.00"),\
+        ("2","Classic Seasalt", "₱115.00"),
+        ("2","Seasalt Caramel", "₱120.00"),
+        ("2","Hazelnut Paline", "₱120.00"),
+        ("3","Black Irish", "₱105.00"),
+        ("3","Black Seasalt", "₱110.00"),
+        ("3","Black Vanilla Cream", "₱110.00"),
+        ("4","Choco Cinnamon", "₱110.00"),
+        ("4","Choco Caramel", "₱110.00"),
+        ("4","Choco Strawberry", "₱120.00"),
+        ("5","Traditional Matcha", "₱105.00"),
+        ("5","Creamy Matcha", "₱120.00"),
+        ("5","Matcha Strawberry", "₱120.00"),
+        ("5","Choco Matcha", "₱120.00"),
+    
     ]
 
     row_index = 2
     col_index = 0
 
-    for name, price in products:
-        card = ctk.CTkFrame(items_frame, corner_radius=15)
+    for id, name, price in products:
+        card = ctk.CTkFrame(items_frame, 
+                            fg_color="#505050", corner_radius=10)
         card.grid(row=row_index, column=col_index, padx=10, pady=10, sticky="nsew")
 
-        img_placeholder = ctk.CTkLabel(card, text="Image", width=140, height=90, fg_color="#444")
+        img_placeholder = ctk.CTkLabel(card, text="Image", width=140, height=30, fg_color="#444")
         img_placeholder.pack(padx=10, pady=10)
 
         lbl_name = ctk.CTkLabel(card, text=name, font=("Arial", 14, "bold"))
