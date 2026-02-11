@@ -1,6 +1,7 @@
 import customtkinter as ctk
 from tkinter import messagebox
 from PIL import Image, ImageTk
+from matplotlib.pylab import double
 
 
 # This block of code is what displays, withdraw and hides the windows.
@@ -11,7 +12,6 @@ def show_login_window(current=None):
     managementWindowCreation.withdraw()  # Hide the management window
     profileWindowCreation.withdraw()  # Hide the profile window
     salesReportWindowCreation.withdraw()  # Hide the sales report window
-
 
 
 def show_cart_window(current=None):
@@ -49,6 +49,8 @@ def show_profile_window(current=None):
     profileWindowCreation.deiconify()  # Show the profile window
     salesReportWindowCreation.withdraw()  # Hide the sales report window
 
+    
+
 
 def show_sales_report_window(current=None):
     loginWindowCreation.withdraw()  # Hide the current window
@@ -58,7 +60,7 @@ def show_sales_report_window(current=None):
     profileWindowCreation.withdraw()  # Hide the profile window
     salesReportWindowCreation.deiconify()  # Show the sales report window
 
-
+# Craete your windows here. You can also create more functions for other windows you will create in the future. Just make sure to follow the same format as the functions above.
 def create_login_window():
     loginwindow = ctk.CTk()
     loginwindow.geometry("1280x720") # Window size
@@ -173,7 +175,7 @@ def create_login_window():
                                 height=50, 
                                 fg_color="#1E6F43", 
                                 hover_color="#14532D",
-                                command=lambda: show_cart_window(loginwindow))
+                                command=lambda: show_profile_window(loginwindow))
     loginButton.pack(padx=(60,60), pady=(0,5), fill="both")
 
     signupLabel = ctk.CTkButton(rightframe, 
@@ -189,90 +191,99 @@ def create_login_window():
 
 def create_cart_window():
     cartwindow = ctk.CTkToplevel()
-    cartwindow.geometry("800x600")
+    cartwindow.geometry("1000x600")
     cartwindow.title("Kape'Bahay Ordering System - Cart")
-     # Further implementation of the cart window goes here.  
 
-    # ================== MAIN LAYOUT ==================
     cartwindow.grid_columnconfigure(0, weight=3)
     cartwindow.grid_columnconfigure(1, weight=1)
     cartwindow.grid_rowconfigure(0, weight=1)
 
-    # ================== LEFT: ITEMS SECTION ==================
-    items_frame = ctk.CTkScrollableFrame(cartwindow, 
-                                         width=500,
-                                         height=600,
-                                         corner_radius=15)
-    items_frame.grid(row=0, column=0, padx=15, pady=15, sticky="nsew")
-
-    items_frame.grid_columnconfigure((0, 1, 2, 3, 4), weight=1)
-
-    # Header
-    title = ctk.CTkLabel(items_frame, text="COFFEES", font=("Arial", 22, "bold"))
-    title.grid(row=0, column=0, columnspan=3, sticky="w", padx=10, pady=(10, 5))
-
-
-    def filter_products(choice):
-        category_index = categories.index(choice)
-        display_products(str(category_index))
-
-    # Category buttons
-
-    category_var = ctk.StringVar()
-
-    categories = ["FAVORITES", "SPANISH SERIES", "SAESALT SERIES", "BLACK SERIES", "CHOCO SERIES", "MATCHA SERIES"]
-
-    categories_Combo = ctk.CTkComboBox(items_frame,
-                                       font=("Arial",12, "bold"),
-                                       variable=category_var,
-                                       values=list(categories),
-                                       state="readonly",
-                                       width=170,
-                                       height=30,
-                                       command=filter_products
-                                       )
-    categories_Combo.grid(row=1, column=0, padx=10, pady=10, sticky="w")
-
+    # ================= DATA =================
+    cart_items = []
     products = [
-            ("0", "Milo Malt", "₱155.00"),
-            ("0", "White salted", "₱155.00"),
-            ("0", "Caramel", "₱145.00"),
-            ("0","Mocha", "₱145.00"),
-            ("1","Classic Spanish", "₱110.00"),
-            ("1","Spanish cinnamon", "₱115.00"),
-            ("1","Spanish Mocha", "₱115.00"),\
-            ("2","Classic Seasalt", "₱115.00"),
-            ("2","Seasalt Caramel", "₱120.00"),
-            ("2","Hazelnut Paline", "₱120.00"),
-            ("3","Black Irish", "₱105.00"),
-            ("3","Black Seasalt", "₱110.00"),
-            ("3","Black Vanilla Cream", "₱110.00"),
-            ("4","Choco Cinnamon", "₱110.00"),
-            ("4","Choco Caramel", "₱110.00"),
-            ("4","Choco Strawberry", "₱120.00"),
-            ("5","Traditional Matcha", "₱105.00"),
-            ("5","Creamy Matcha", "₱120.00"),
-            ("5","Matcha Strawberry", "₱120.00"),
-            ("5","Choco Matcha", "₱120.00"),
+            ("0", "Milo Malt", 155.00),
+            ("0", "White salted", 155.00),
+            ("0", "Caramel", 145.00),
+            ("0","Mocha", 145.00),
+            ("1","Classic Spanish", 110.00),
+            ("1","Spanish cinnamon", 115.00),
+            ("1","Spanish Mocha", 115.00),
+            ("2","Classic Seasalt", 115.00),
+            ("2","Seasalt Caramel", 120.00),
+            ("2","Hazelnut Paline", 120.00),
+            ("3","Black Irish", 105.00),
+            ("3","Black Seasalt", 110.00),
+            ("3","Black Vanilla Cream", 110.00),
+            ("4","Choco Cinnamon", 110.00),
+            ("4","Choco Caramel", 110.00),
+            ("4","Choco Strawberry", 120.00),
+            ("5","Traditional Matcha", 105.00),
+            ("5","Creamy Matcha", 120.00),
+            ("5","Matcha Strawberry", 120.00),
+            ("5","Choco Matcha", 120.00),
     ]
 
-    
+    # ================= LEFT SIDE =================
+    headerFrame = ctk.CTkFrame(cartwindow, 
+                               fg_color="#FFFFFF") 
+    headerFrame.grid(row=0, column=0, padx=15, pady=(0, 0), sticky="nsw")
+    headerFrame.grid_columnconfigure(0, weight=1)
 
+    items_frame = ctk.CTkScrollableFrame(cartwindow, corner_radius=15)
+    items_frame.grid(row=1, column=0, padx=15, pady=(0, 15), sticky="new")
 
+    items_frame.grid_columnconfigure((0, 1, 2), weight=1)
+
+    # ── Categories list (used for both index and display)
+    categories = [
+        "FAVORITES",
+        "SPANISH SERIES",
+        "SEASALT SERIES",      # ← fixed typo: SAESALT → SEASALT ?
+        "BLACK SERIES",
+        "CHOCO SERIES",
+        "MATCHA SERIES"
+    ]
+
+    def filter_products(choice):
+        if choice == "All":
+            display_products(None)
+        else:
+            category_index = categories.index(choice)
+            display_products(str(category_index))
+
+    category_var = ctk.StringVar(value="All")   # default shows everything
+
+    # ── Header
+    CoffeeHeaderLabel = ctk.CTkLabel(
+        headerFrame,
+        text="Coffee Menu",
+        font=("Arial", 20, "bold"))
+    CoffeeHeaderLabel.pack(pady=15, anchor="w", side="top")
+    # ── ComboBox – full width, centered look
+    categories_Combo = ctk.CTkComboBox(
+        headerFrame,
+        values=["All"] + categories,           
+        variable=category_var,
+        font=("Arial", 13, "bold"),
+        state="readonly",
+        width=280,                             
+        height=34,
+        command=filter_products
+    )
+    categories_Combo.pack(pady=(0, 15), anchor="w", side="top")
+    # ── Product display function
     def display_products(selected_category=None):
-
+        # Remove only product cards (rows >= 2)
         for widget in items_frame.winfo_children():
-            if int(widget.grid_info().get("row", 0)) >= 2:
+            info = widget.grid_info()
+            if info and int(info.get("row", 0)) >= 2:
                 widget.destroy()
 
         row_index = 2
         col_index = 0
 
-
-
-
-        for id, name, price in products:
-            if selected_category is None or id == selected_category:
+        for cat_id, name, price in products:
+            if selected_category is None or cat_id == selected_category:
 
                 card = ctk.CTkFrame(items_frame, fg_color="#505050", corner_radius=10)
                 card.grid(row=row_index, column=col_index, padx=10, pady=10, sticky="nsew")
@@ -287,6 +298,7 @@ def create_cart_window():
                 lbl_price.pack()
 
                 add_btn = ctk.CTkButton(card, text="+", width=32, height=32)
+                # Tip: connect button later with lambda or partial if needed
                 add_btn.pack(pady=8)
 
                 col_index += 1
@@ -294,58 +306,86 @@ def create_cart_window():
                     col_index = 0
                     row_index += 1
 
-    display_products() 
+    # Show all products initially
+    display_products()
 
-    # ================== RIGHT: CART SUMMARY ==================
+    
+
+    
+
+    # ================= RIGHT SIDE =================
     cart_frame = ctk.CTkFrame(cartwindow, corner_radius=15)
     cart_frame.grid(row=0, column=1, padx=(0, 15), pady=15, sticky="nsew")
 
     cart_frame.grid_columnconfigure(0, weight=1)
 
-    cart_title = ctk.CTkLabel(cart_frame, text="Current Order", font=("Arial", 20, "bold"))
-    cart_title.pack(pady=10)
+    ctk.CTkLabel(cart_frame, text="Current Order",
+                 font=("Arial", 20, "bold")).pack(pady=10)
 
-    order_items_label = ctk.CTkLabel(cart_frame, text="Items in Cart:", font=("Arial", 14, "bold"))
-    order_items_label.pack(anchor="w", padx=10, pady=(10, 5))
+    cart_items_container = ctk.CTkScrollableFrame(cart_frame, height=300)
+    cart_items_container.pack(fill="both", expand=True, padx=10, pady=10)
 
-    # Order items
-    order_items = [
-        ("", ""),
-        ("", ""),
-    ]
+    subtotal_label = ctk.CTkLabel(cart_frame, text="Subtotal: ₱0.00",
+                                  font=("Arial", 16, "bold"))
+    subtotal_label.pack(pady=10)
 
-    for item, price in order_items:
-        item_frame = ctk.CTkFrame(cart_frame, fg_color="#2b2b2b", corner_radius=10)
-        item_frame.pack(fill="x", padx=10, pady=5)
+    
 
-        name_lbl = ctk.CTkLabel(item_frame, text=item)
-        name_lbl.pack(side="left", padx=10)
+    # ================= FUNCTIONS =================
 
-        price_lbl = ctk.CTkLabel(item_frame, text=price)
-        price_lbl.pack(side="right", padx=10)
+    def update_cart_display():
+        # Clear previous items
+        for widget in cart_items_container.winfo_children():
+            widget.destroy()
 
-    # Summary
-    summary_frame = ctk.CTkFrame(cart_frame, fg_color="transparent")
-    summary_frame.pack(side="bottom",fill="x", padx=10, pady=15)
+        subtotal = 0
 
-    summary_label = ctk.CTkLabel(summary_frame, text="Subtotal: ₱215.00")
-    summary_label.pack(anchor="sw")
+        for item in cart_items:
+            subtotal += item["price"]
 
-    total_lbl = ctk.CTkLabel(
-        summary_frame,
-        text="Total: ₱215.00",
-        font=("Arial", 16, "bold")
-    )
-    total_lbl.pack(anchor="sw", pady=(10, 0))
+            item_frame = ctk.CTkFrame(cart_items_container, fg_color="#2b2b2b")
+            item_frame.pack(fill="x", pady=5)
 
-    # Continue Button
-    continue_btn = ctk.CTkButton(
-        summary_frame,
-        text="Continue",
-        height=45,
-        corner_radius=20
-    )
-    continue_btn.pack(fill="x", padx=15, pady=15)
+            ctk.CTkLabel(item_frame, text=item["name"]).pack(side="left", padx=10)
+            ctk.CTkLabel(item_frame,
+                         text=f"₱{item['price']:.2f}").pack(side="right", padx=10)
+
+        subtotal_label.configure(text=f"Subtotal: ₱{subtotal:.2f}")
+
+    def add_to_cart(name, price):
+        cart_items.append({"name": name, "price": price})
+        update_cart_display()
+
+    # ================= DISPLAY PRODUCTS =================
+
+    row = 1
+    col = 0
+
+    for id, name, price in products:
+
+        card = ctk.CTkFrame(items_frame, fg_color="#505050", corner_radius=10)
+        card.grid(row=row, column=col, padx=10, pady=10, sticky="nsew")
+
+        ctk.CTkLabel(card, text="Image", width=140,
+                     height=30, fg_color="#444").pack(pady=10)
+
+        ctk.CTkLabel(card, text=name,
+                     font=("Arial", 14, "bold")).pack()
+
+        ctk.CTkLabel(card,
+                     text=f"₱{price:.2f}").pack()
+
+        ctk.CTkButton(
+            card,
+            text="+",
+            width=30,
+            command=lambda n=name, p=price: add_to_cart(n, p)  # ✅ FIXED LAMBDA
+        ).pack(pady=5)
+
+        col += 1
+        if col > 2:
+            col = 0
+            row += 1
 
     return cartwindow
 
@@ -367,11 +407,21 @@ def create_management_window():
     return settings_window
 
 def create_profile_window():
-    profile_window = ctk.CTkToplevel()
-    profile_window.geometry("800x600")
-    profile_window.title("Kape'Bahay Ordering System - Admin Profile")
-     # Further implementation of the admin profile window goes here.  
-    return profile_window
+    
+
+    
+
+    def lock_system(self):
+        lock_window = ctk.CTkToplevel(self)
+        lock_window.geometry("900x600")
+        lock_window.attributes("-topmost", True)
+        lock_window.overrideredirect(True)
+        lock_window.configure(fg_color="#120f0d")
+        f = ctk.CTkFrame(lock_window, fg_color="#120f0d"); f.place(relx=0.5, rely=0.5, anchor="center")
+        ctk.CTkLabel(f, text="SYSTEM LOCKED", font=("Arial Bold", 40), text_color="#e59a6d").pack(pady=20)
+        e = ctk.CTkEntry(f, show="*", width=250, height=40); e.pack()
+        ctk.CTkButton(f, text="UNLOCK", command=lambda: lock_window.destroy() if e.get()==self.correct_pin else None,
+                      fg_color="#2c4c7c", width=250, height=45).pack(pady=20)
 
 def create_sales_report_window():
     report_window = ctk.CTkToplevel()
@@ -379,9 +429,7 @@ def create_sales_report_window():
     report_window.title("Kape'Bahay Ordering System - Sales Report")
      # Further implementation of the sales report window goes here.  
     return report_window
-
-
-
+ 
 # Also replicate this part for other windows you will create in the future.
 loginWindowCreation = create_login_window()
 cartWIndowCreation = create_cart_window()
