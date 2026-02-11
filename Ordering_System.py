@@ -175,7 +175,7 @@ def create_login_window():
                                 height=50, 
                                 fg_color="#1E6F43", 
                                 hover_color="#14532D",
-                                command=lambda: show_profile_window(loginwindow))
+                                command=lambda: show_cart_window(loginwindow))
     loginButton.pack(padx=(60,60), pady=(0,5), fill="both")
 
     signupLabel = ctk.CTkButton(rightframe, 
@@ -191,12 +191,13 @@ def create_login_window():
 
 def create_cart_window():
     cartwindow = ctk.CTkToplevel()
-    cartwindow.geometry("1000x600")
+    cartwindow.geometry("1280x720")
     cartwindow.title("Kape'Bahay Ordering System - Cart")
 
     cartwindow.grid_columnconfigure(0, weight=3)
     cartwindow.grid_columnconfigure(1, weight=1)
-    cartwindow.grid_rowconfigure(0, weight=1)
+    cartwindow.grid_rowconfigure(0, weight=0) 
+    cartwindow.grid_rowconfigure(1, weight=1)  
 
     # ================= DATA =================
     cart_items = []
@@ -225,12 +226,17 @@ def create_cart_window():
 
     # ================= LEFT SIDE =================
     headerFrame = ctk.CTkFrame(cartwindow, 
-                               fg_color="#FFFFFF") 
-    headerFrame.grid(row=0, column=0, padx=15, pady=(0, 0), sticky="nsw")
-    headerFrame.grid_columnconfigure(0, weight=1)
+                               fg_color="transparent",
+                               width=592,
+                               height=115) 
+    headerFrame.grid(row=0, column=0, columnspan=3, padx=15, pady=(0, 0), sticky="nw")
+    headerFrame.grid_columnconfigure((0, 1, 2), weight=1)
+    headerFrame.grid_propagate(False)
+    headerFrame.pack_propagate(False)
 
-    items_frame = ctk.CTkScrollableFrame(cartwindow, corner_radius=15)
-    items_frame.grid(row=1, column=0, padx=15, pady=(0, 15), sticky="new")
+    items_frame = ctk.CTkScrollableFrame(cartwindow, 
+                                         corner_radius=15)
+    items_frame.grid(row=1, column=0, padx=15, pady=(15, 15), sticky="nsew")
 
     items_frame.grid_columnconfigure((0, 1, 2), weight=1)
 
@@ -238,7 +244,7 @@ def create_cart_window():
     categories = [
         "FAVORITES",
         "SPANISH SERIES",
-        "SEASALT SERIES",      # ← fixed typo: SAESALT → SEASALT ?
+        "SEASALT SERIES",      
         "BLACK SERIES",
         "CHOCO SERIES",
         "MATCHA SERIES"
@@ -256,21 +262,21 @@ def create_cart_window():
     # ── Header
     CoffeeHeaderLabel = ctk.CTkLabel(
         headerFrame,
-        text="Coffee Menu",
-        font=("Arial", 20, "bold"))
+        text="COFFEE MENU",
+        font=("Segoe UI", 40, "bold"))
     CoffeeHeaderLabel.pack(pady=15, anchor="w", side="top")
     # ── ComboBox – full width, centered look
     categories_Combo = ctk.CTkComboBox(
         headerFrame,
         values=["All"] + categories,           
         variable=category_var,
-        font=("Arial", 13, "bold"),
+        font=("Segoe UI", 18, "bold"),
         state="readonly",
         width=280,                             
-        height=34,
+        height=70,
         command=filter_products
     )
-    categories_Combo.pack(pady=(0, 15), anchor="w", side="top")
+    categories_Combo.pack(pady=(0, 0), anchor="w", side="top")
     # ── Product display function
     def display_products(selected_category=None):
         # Remove only product cards (rows >= 2)
@@ -314,20 +320,33 @@ def create_cart_window():
     
 
     # ================= RIGHT SIDE =================
-    cart_frame = ctk.CTkFrame(cartwindow, corner_radius=15)
-    cart_frame.grid(row=0, column=1, padx=(0, 15), pady=15, sticky="nsew")
+    cart_frame = ctk.CTkFrame(cartwindow, 
+                              corner_radius=15)
+    cart_frame.grid(row=0, column=1, rowspan=2, padx=(0, 15), pady=15, sticky="nsew")
 
     cart_frame.grid_columnconfigure(0, weight=1)
 
-    ctk.CTkLabel(cart_frame, text="Current Order",
-                 font=("Arial", 20, "bold")).pack(pady=10)
+    current_order_label = ctk.CTkLabel(cart_frame, 
+                 text="Current Order",
+                 font=("Arial", 20, "bold"))
+    current_order_label.pack(pady=(10, 0))
 
     cart_items_container = ctk.CTkScrollableFrame(cart_frame, height=300)
-    cart_items_container.pack(fill="both", expand=True, padx=10, pady=10)
+    cart_items_container.pack(fill="both", expand=True, padx=15, pady=10)
 
-    subtotal_label = ctk.CTkLabel(cart_frame, text="Subtotal: ₱0.00",
+    subtotal_label = ctk.CTkLabel(cart_frame, 
+                                  text="Subtotal: ₱0.00",
                                   font=("Arial", 16, "bold"))
     subtotal_label.pack(pady=10)
+
+    create_order_button = ctk.CTkButton(cart_frame, 
+                                        text="Create Order", 
+                                        font=("Segoe UI", 18, "bold"), 
+                                        width=200, 
+                                        height=50, 
+                                        fg_color="#1E6F43", 
+                                        hover_color="#14532D")
+    create_order_button.pack(pady=(0, 20), fill="both", padx=15)
 
     
 
@@ -407,21 +426,11 @@ def create_management_window():
     return settings_window
 
 def create_profile_window():
-    
-
-    
-
-    def lock_system(self):
-        lock_window = ctk.CTkToplevel(self)
-        lock_window.geometry("900x600")
-        lock_window.attributes("-topmost", True)
-        lock_window.overrideredirect(True)
-        lock_window.configure(fg_color="#120f0d")
-        f = ctk.CTkFrame(lock_window, fg_color="#120f0d"); f.place(relx=0.5, rely=0.5, anchor="center")
-        ctk.CTkLabel(f, text="SYSTEM LOCKED", font=("Arial Bold", 40), text_color="#e59a6d").pack(pady=20)
-        e = ctk.CTkEntry(f, show="*", width=250, height=40); e.pack()
-        ctk.CTkButton(f, text="UNLOCK", command=lambda: lock_window.destroy() if e.get()==self.correct_pin else None,
-                      fg_color="#2c4c7c", width=250, height=45).pack(pady=20)
+    profile_window = ctk.CTkToplevel()
+    profile_window.geometry("800x600")
+    profile_window.title("Kape'Bahay Ordering System - Profile")
+     # Further implementation of the profile window goes here.  
+    return profile_window
 
 def create_sales_report_window():
     report_window = ctk.CTkToplevel()
