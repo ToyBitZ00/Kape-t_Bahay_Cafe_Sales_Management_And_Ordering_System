@@ -17,14 +17,21 @@ def create_login_window():
     #loginwindow.iconbitmap("logo file path here") the icon file must be in .ico format and must be placed in the same folder as the system
 
     # Left Frame
-    leftframe = ctk.CTkFrame(loginwindow, fg_color="transparent")
+    leftframe = ctk.CTkFrame(loginwindow, 
+                             fg_color="transparent")
     leftframe.pack(side="left", padx=(0,0), pady=0, fill="both", expand=True)
 
     greetingLabel = ctk.CTkLabel(leftframe, 
                                  bg_color="transparent",
-                                 text="Kape't Bahay", 
-                                 font=ctk.CTkFont(size=40, weight="bold"))
-    greetingLabel.pack(pady=(100,0))
+                                 text="WELCOME", 
+                                 font=("Segoe UI", 40, "bold"))
+    greetingLabel.pack(padx=(0,0), pady=(150,0))
+
+    headlineLabel = ctk.CTkLabel(leftframe, 
+                                 text="to Kape'Bahay",
+                                 font=("Segoe UI", 20, "bold"),
+                                 bg_color="transparent")
+    headlineLabel.pack(padx=(0,0), pady=(10,0))
     
 
     # Right Frame
@@ -35,10 +42,10 @@ def create_login_window():
 
     loginLabel = ctk.CTkLabel(rightframe, 
                               text="SIGN IN", 
-                              font=ctk.CTkFont("Segoe UI", size=60, weight="bold"),
+                              font=("Segoe UI",50,"bold"),
                               fg_color="#FFFFFF",
                               text_color="#000000")
-    loginLabel.pack(pady=(20,10))
+    loginLabel.pack(padx=(0,100), pady=(50,0), side="top")
 
     usernameEntry = ctk.CTkEntry(rightframe, placeholder_text="Username", width=200, height=40, font=ctk.CTkFont(size=16))
     usernameEntry.pack(pady=(40,10))
