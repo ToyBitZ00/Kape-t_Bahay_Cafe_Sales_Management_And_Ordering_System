@@ -1,10 +1,8 @@
-from email.mime import image
 import customtkinter as ctk
 from tkinter import messagebox
 from PIL import Image, ImageTk
 
 # This block of code is what displays, withdraw and hides the windows.
-
 def show_cart_window(current=None):
     loginWindowCreation.withdraw()  # Hide the current window
     cartWIndowCreation.deiconify()  # Show the cart window
@@ -19,7 +17,7 @@ def create_login_window():
     #loginwindow.iconbitmap("logo file path here") the icon file must be in .ico format and must be placed in the same folder as the system
 
     # Left Frame
-    leftframe = ctk.CTkFrame(loginwindow, fg_color="#1E6F43")
+    leftframe = ctk.CTkFrame(loginwindow, fg_color="transparent")
     leftframe.pack(side="left",fill="both", expand=True)
 
     greetingLabel = ctk.CTkLabel(leftframe, 
@@ -27,17 +25,19 @@ def create_login_window():
                                  text="Kape't Bahay", 
                                  font=ctk.CTkFont(size=40, weight="bold"))
     greetingLabel.pack(pady=(100,0))
+    
 
     # Right Frame
     rightframe = ctk.CTkFrame(loginwindow, 
                               fg_color="#FFFFFF",
                               corner_radius=20)
-    rightframe.pack(side="right", padx=(0, 100), pady=100, fill="both", expand=True)
+    rightframe.pack(side="right", padx=(50, 100), pady=100, fill="both", expand=True)
 
     loginLabel = ctk.CTkLabel(rightframe, 
                               text="SIGN IN", 
                               font=ctk.CTkFont(size=30, weight="bold"),
-                              fg_color="transparent")
+                              fg_color="#FFFFFF",
+                              text_color="#000000")
     loginLabel.pack(pady=(100,10))
 
     usernameEntry = ctk.CTkEntry(rightframe, placeholder_text="Username", width=200, height=40, font=ctk.CTkFont(size=16))
@@ -86,7 +86,7 @@ def create_login_window():
     return loginwindow
 
 
-def cart_window():
+def create_cart_window():
     cartwindow = ctk.CTkToplevel()
     cartwindow.geometry("800x600")
     cartwindow.title("Kape'Bahay Ordering System - Cart")
@@ -204,10 +204,13 @@ def cart_window():
     cart_title = ctk.CTkLabel(cart_frame, text="Current Order", font=("Arial", 20, "bold"))
     cart_title.pack(pady=10)
 
+    order_items_label = ctk.CTkLabel(cart_frame, text="Items in Cart:", font=("Arial", 14, "bold"))
+    order_items_label.pack(anchor="w", padx=10, pady=(10, 5))
+
     # Order items
     order_items = [
-        ("Raspberry Tart", "₱120.00"),
-        ("Lemon Tart", "₱90.00"),
+        ("", ""),
+        ("", ""),
     ]
 
     for item, price in order_items:
@@ -222,22 +225,21 @@ def cart_window():
 
     # Summary
     summary_frame = ctk.CTkFrame(cart_frame, fg_color="transparent")
-    summary_frame.pack(fill="x", padx=10, pady=15)
+    summary_frame.pack(side="bottom",fill="x", padx=10, pady=15)
 
-    ctk.CTkLabel(summary_frame, text="Subtotal: ₱210.00").pack(anchor="w")
-    ctk.CTkLabel(summary_frame, text="Service Charge: 20%").pack(anchor="w")
-    ctk.CTkLabel(summary_frame, text="Tax: ₱15.00").pack(anchor="w")
+    summary_label = ctk.CTkLabel(summary_frame, text="Subtotal: ₱215.00")
+    summary_label.pack(anchor="sw")
 
     total_lbl = ctk.CTkLabel(
         summary_frame,
-        text="Total: ₱225.00",
+        text="Total: ₱215.00",
         font=("Arial", 16, "bold")
     )
-    total_lbl.pack(anchor="w", pady=(10, 0))
+    total_lbl.pack(anchor="sw", pady=(10, 0))
 
     # Continue Button
     continue_btn = ctk.CTkButton(
-        cart_frame,
+        summary_frame,
         text="Continue",
         height=45,
         corner_radius=20
@@ -248,7 +250,7 @@ def cart_window():
 
 # Also replicate this part for other windows you will create in the future.
 loginWindowCreation = create_login_window()
-cartWIndowCreation = cart_window()
+cartWIndowCreation = create_cart_window()
 
 
 # Hides other window at the startup of the program.
