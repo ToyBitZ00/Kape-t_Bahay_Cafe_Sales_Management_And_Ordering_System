@@ -10,47 +10,86 @@ def show_cart_window(current=None):
 
 def create_login_window():
     loginwindow = ctk.CTk()
-    loginwindow.geometry("900x700") # Window size
+    loginwindow.geometry("1280x720") # Window size
     loginwindow.title("Kape'Bahay Ordering System - Login") # Window Title
-    loginwindow.minsize(1280, 720) # Disable window resizing
+    loginwindow.resizable(False, False) # Disable window resizing
     loginwindow.configure(fg_color="#c3955b") # Window background color
     #loginwindow.iconbitmap("logo file path here") the icon file must be in .ico format and must be placed in the same folder as the system
+
+    loginwindow.grid_columnconfigure(0, weight=1)
+    loginwindow.grid_columnconfigure(1, weight=1)
+    loginwindow.grid_rowconfigure(0, weight=1)
+
 
     # Left Frame
     leftframe = ctk.CTkFrame(loginwindow, 
                              fg_color="transparent")
-    leftframe.pack(side="left", padx=(0,0), pady=0, fill="both", expand=True)
+    leftframe.grid(row=0, column=0, sticky="nesw")
 
     greetingLabel = ctk.CTkLabel(leftframe, 
                                  bg_color="transparent",
                                  text="WELCOME", 
                                  font=("Segoe UI", 40, "bold"))
-    greetingLabel.pack(padx=(0,0), pady=(150,0))
+    greetingLabel.pack(padx=(0,0), pady=(150,0), anchor="center")
 
     headlineLabel = ctk.CTkLabel(leftframe, 
                                  text="to Kape'Bahay",
                                  font=("Segoe UI", 20, "bold"),
                                  bg_color="transparent")
-    headlineLabel.pack(padx=(0,0), pady=(10,0))
+    headlineLabel.pack(padx=(0,0), pady=(10,0), anchor="center")
     
+    right_container = ctk.CTkFrame(loginwindow, 
+                                   fg_color="transparent")
+    right_container.grid(row=0, column=1, sticky="nsew")
+    right_container.grid_rowconfigure(0, weight=1)
+    right_container.grid_columnconfigure(0, weight=1)
+
 
     # Right Frame
-    rightframe = ctk.CTkFrame(loginwindow, 
+    rightframe = ctk.CTkFrame(right_container, 
                               fg_color="#FFFFFF",
-                              corner_radius=20)
-    rightframe.pack(side="right", padx=(80, 80), fill="both", pady=100, expand=True)
+                              corner_radius=25,
+                              width=460,
+                              height=560,
+                              border_width=2,
+                              border_color="#dddddd")
+    rightframe.place(relx=0.5, rely=0.5, anchor="center")
+    rightframe.pack_propagate(False)
+    rightframe.grid_propagate(False)
 
     loginLabel = ctk.CTkLabel(rightframe, 
-                              text="SIGN IN", 
+                              text="Sign in", 
                               font=("Segoe UI",50,"bold"),
                               fg_color="#FFFFFF",
                               text_color="#000000")
-    loginLabel.pack(padx=(0,100), pady=(50,0), side="top")
+    loginLabel.pack(side="top", padx=(60,0), pady=(50,0), anchor="w")
 
-    usernameEntry = ctk.CTkEntry(rightframe, placeholder_text="Username", width=200, height=40, font=ctk.CTkFont(size=16))
-    usernameEntry.pack(pady=(40,10))
+    descriptionLabel = ctk.CTkLabel(rightframe,
+                                    text="Please enter your credentials to continue",
+                                    font=("Segoe UI", 14),
+                                    fg_color="#FFFFFF",
+                                    text_color="#000000")
+    descriptionLabel.pack(side="top", padx=(60,0), pady=(10,20), anchor="w")
 
-    passwordEntry = ctk.CTkEntry(rightframe, placeholder_text="Password", width=200, height=40, font=ctk.CTkFont(size=16), show="*")
+    usernameEntry = ctk.CTkEntry(rightframe, 
+                                 placeholder_text="Username", 
+                                 placeholder_text_color="#000000",
+                                 width=345, 
+                                 height=60, 
+                                 font=("Segoe UI", 16),
+                                 fg_color="#FFFFFF",
+                                 border_color="#dddddd")
+    usernameEntry.pack(pady=(10,10))
+
+    passwordEntry = ctk.CTkEntry(rightframe, 
+                                 placeholder_text="Password", 
+                                 placeholder_text_color="#000000",
+                                 width=345, 
+                                 height=60, 
+                                 font=("Segoe UI", 16), 
+                                 fg_color="#FFFFFF",
+                                 show="*",
+                                 border_color="#dddddd")
     passwordEntry.pack(pady=(10,5))
 
     showpasswordvar = ctk.BooleanVar()
@@ -69,11 +108,12 @@ def create_login_window():
                                            checkbox_width=12,
                                            checkbox_height=12,
                                            checkmark_color="#1E6F43",
-                                           border_width=1,
+                                           border_width=2,
                                            hover_color="#1E6F43",
                                            text_color="#000000",
-                                           command=toggle_password)
-    showpasswordcheckbox.pack(padx=(0,80), pady=(0,20))
+                                           command=toggle_password,
+                                           corner_radius=3)
+    showpasswordcheckbox.pack(padx=(65,0), pady=(0,20), anchor="w")
 
     loginButton = ctk.CTkButton(rightframe, 
                                 text="Login", 
@@ -83,12 +123,15 @@ def create_login_window():
                                 fg_color="#1E6F43", 
                                 hover_color="#14532D",
                                 command=lambda: show_cart_window(loginwindow))
-    loginButton.pack(pady=(0,10))
+    loginButton.pack(padx=(60,60), pady=(0,5), fill="both")
 
-    signupLabel = ctk.CTkLabel(rightframe, text="Don't have an account?", font=ctk.CTkFont(size=14), fg_color="#3032AA")    
-    signupLabel.pack(pady=(10,5))
-    signupButton = ctk.CTkButton(rightframe, text="Sign Up", font=ctk.CTkFont(size=16), width=100, height=40, fg_color="#1E6F43", hover_color="#14532D")
-    signupButton.pack()
+    signupLabel = ctk.CTkButton(rightframe, 
+                                text="Don't have an account?", 
+                                font=ctk.CTkFont(size=14), 
+                                fg_color="transparent", 
+                                text_color="#3032AA",
+                                hover_color="FFFFFF")    
+    signupLabel.pack(pady=(0,5))
 
     return loginwindow
 
