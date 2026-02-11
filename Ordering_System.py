@@ -13,12 +13,12 @@ def create_login_window():
     loginwindow.geometry("900x700") # Window size
     loginwindow.title("Kape'Bahay Ordering System - Login") # Window Title
     loginwindow.minsize(1280, 720) # Disable window resizing
-    loginwindow.configure(bg="#FFFFFF") # Window background color
+    loginwindow.configure(fg_color="#c3955b") # Window background color
     #loginwindow.iconbitmap("logo file path here") the icon file must be in .ico format and must be placed in the same folder as the system
 
     # Left Frame
     leftframe = ctk.CTkFrame(loginwindow, fg_color="transparent")
-    leftframe.pack(side="left",fill="both", expand=True)
+    leftframe.pack(side="left", padx=(0,0), pady=0, fill="both", expand=True)
 
     greetingLabel = ctk.CTkLabel(leftframe, 
                                  bg_color="transparent",
@@ -31,17 +31,17 @@ def create_login_window():
     rightframe = ctk.CTkFrame(loginwindow, 
                               fg_color="#FFFFFF",
                               corner_radius=20)
-    rightframe.pack(side="right", padx=(50, 100), pady=100, fill="both", expand=True)
+    rightframe.pack(side="right", padx=(80, 80), fill="both", pady=100, expand=True)
 
     loginLabel = ctk.CTkLabel(rightframe, 
                               text="SIGN IN", 
-                              font=ctk.CTkFont(size=30, weight="bold"),
+                              font=ctk.CTkFont("Segoe UI", size=60, weight="bold"),
                               fg_color="#FFFFFF",
                               text_color="#000000")
-    loginLabel.pack(pady=(100,10))
+    loginLabel.pack(pady=(20,10))
 
     usernameEntry = ctk.CTkEntry(rightframe, placeholder_text="Username", width=200, height=40, font=ctk.CTkFont(size=16))
-    usernameEntry.pack(pady=(150,10))
+    usernameEntry.pack(pady=(40,10))
 
     passwordEntry = ctk.CTkEntry(rightframe, placeholder_text="Password", width=200, height=40, font=ctk.CTkFont(size=16), show="*")
     passwordEntry.pack(pady=(10,5))
@@ -64,7 +64,7 @@ def create_login_window():
                                            checkmark_color="#1E6F43",
                                            border_width=1,
                                            hover_color="#1E6F43",
-                                           text_color="#FFFFFF",
+                                           text_color="#000000",
                                            command=toggle_password)
     showpasswordcheckbox.pack(padx=(0,80), pady=(0,20))
 
