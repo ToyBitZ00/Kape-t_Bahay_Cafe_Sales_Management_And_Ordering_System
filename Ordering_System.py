@@ -1,7 +1,8 @@
 import customtkinter as ctk
 from tkinter import messagebox
 from PIL import Image, ImageTk
-from matplotlib.pylab import double
+import sqlite3
+import os
 
 
 # This block of code is what displays, withdraw and hides the windows.
@@ -66,30 +67,42 @@ def create_login_window():
     loginwindow.geometry("1280x720") # Window size
     loginwindow.title("Kape'Bahay Ordering System - Login") # Window Title
     loginwindow.resizable(False, False) # Disable window resizing
-    loginwindow.configure(fg_color="#c3955b") # Window background color
+    loginwindow.configure(fg_color="#43382F") # Window background color
     #loginwindow.iconbitmap("logo file path here") the icon file must be in .ico format and must be placed in the same folder as the system
 
-    loginwindow.grid_columnconfigure(0, weight=1)
-    loginwindow.grid_columnconfigure(1, weight=1)
+    loginwindow.grid_columnconfigure(0, minsize=640)
+    loginwindow.grid_columnconfigure(1, minsize=640)
     loginwindow.grid_rowconfigure(0, weight=1)
 
 
     # Left Frame
     leftframe = ctk.CTkFrame(loginwindow, 
-                             fg_color="transparent")
-    leftframe.grid(row=0, column=0, sticky="nesw")
+                             fg_color="transparent",
+                             width=640)
+    leftframe.grid(row=0, column=0, sticky="news")
+    leftframe.grid_propagate(False)
 
+    businessLogo = ctk.CTkLabel(leftframe, 
+                                text="Logo Image",
+                                font=("Segoe UI", 20, "bold"),
+                                text_color="#000000",
+                                width=400,
+                                height=400,
+                                fg_color="#FFFFFF")
+    businessLogo.pack(padx=(80,0), pady=(80,0), anchor="center")
+    #businessLogoImage = ctk.CTkImage(Image.open("kape't bahay logo.png"), size=(200, 200))
+    #businessLogo.configure(image=businessLogoImage)
     greetingLabel = ctk.CTkLabel(leftframe, 
                                  bg_color="transparent",
-                                 text="WELCOME", 
+                                 text="Kape't Bahay Cafe", 
                                  font=("Segoe UI", 40, "bold"))
-    greetingLabel.pack(padx=(0,0), pady=(150,0), anchor="center")
+    greetingLabel.pack(padx=(80,0), pady=(30,0), anchor="center")
 
-    headlineLabel = ctk.CTkLabel(leftframe, 
-                                 text="to Kape'Bahay",
-                                 font=("Segoe UI", 20, "bold"),
+    subGreetingLabel = ctk.CTkLabel(leftframe, 
+                                 text="Ordering and Management System",
+                                 font=("Segoe UI", 30, "bold"),
                                  bg_color="transparent")
-    headlineLabel.pack(padx=(0,0), pady=(10,0), anchor="center")
+    subGreetingLabel.pack(padx=(85,0), pady=(0,0), anchor="center")
     
     right_container = ctk.CTkFrame(loginwindow, 
                                    fg_color="transparent")
@@ -100,7 +113,7 @@ def create_login_window():
 
     # Right Frame
     rightframe = ctk.CTkFrame(right_container, 
-                              fg_color="#FFFFFF",
+                              fg_color="#F2F1EF",
                               corner_radius=25,
                               width=460,
                               height=560,
