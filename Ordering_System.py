@@ -175,7 +175,7 @@ def create_login_window():
                                 height=50, 
                                 fg_color="#1E6F43", 
                                 hover_color="#14532D",
-                                command=lambda: show_cart_window(loginwindow))
+                                command=lambda: show_profile_window(loginwindow))
     loginButton.pack(padx=(60,60), pady=(0,5), fill="both")
 
     signupLabel = ctk.CTkButton(rightframe, 
@@ -427,9 +427,73 @@ def create_management_window():
 
 def create_profile_window():
     profile_window = ctk.CTkToplevel()
-    profile_window.geometry("800x600")
-    profile_window.title("Kape'Bahay Ordering System - Profile")
-     # Further implementation of the profile window goes here.  
+    profile_window.geometry("1280x720")
+    profile_window.title("Kape'Bahay - Barista Profile")
+    profile_window.resizable(False, False)
+    profile_window.configure(fg_color="#120f0d")
+
+    sales_var = ctk.DoubleVar(value=500.00)
+    orders_var = ctk.IntVar(value=42)
+
+    name_label = ctk.CTkLabel(profile_window, text="Mico Macapagal", 
+                              font=("Segoe UI", 54, "bold"), text_color="white")
+    name_label.place(x=60, y=40)
+    
+    role_badge = ctk.CTkLabel(profile_window, text="BARISTA", fg_color="#c8b591", text_color="black", 
+                              corner_radius=15, font=("Segoe UI", 16, "bold"), width=110, height=35)
+    role_badge.place(x=500, y=55)
+
+    main_box = ctk.CTkFrame(profile_window, fg_color="#6f5e4c", corner_radius=25, width=1160, height=500)
+    main_box.place(relx=0.5, rely=0.6, anchor="center")
+
+    v_divider = ctk.CTkFrame(main_box, width=2, height=380, fg_color="#9e8d7a")
+    v_divider.place(x=450, y=0)
+
+    h_divider = ctk.CTkFrame(main_box, width=1160, height=2, fg_color="#9e8d7a")
+    h_divider.place(x=0, y=380)
+
+    shift_title = ctk.CTkLabel(main_box, text="My Shift", font=("Segoe UI", 30, "bold"), text_color="white")
+    shift_title.place(x=40, y=30)
+
+    status_label = ctk.CTkLabel(main_box, text="Status:", font=("Segoe UI", 24), text_color="white")
+    status_label.place(x=40, y=100)
+    
+    status_menu = ctk.CTkOptionMenu(main_box, values=["On Shift", "Off Shift"], 
+                                     fg_color="#4a3f35", button_color="#4a3f35", 
+                                     width=160, height=40, font=("Segoe UI", 18))
+    status_menu.place(x=130, y=100)
+
+    sales_display = ctk.CTkLabel(main_box, text=f"Total Sales: PHP {sales_var.get():.2f}", 
+                                  font=("Segoe UI", 24), text_color="white")
+    sales_display.place(x=40, y=180)
+
+    orders_display = ctk.CTkLabel(main_box, text=f"Total Orders: {orders_var.get()}", 
+                                   font=("Segoe UI", 24), text_color="white")
+    orders_display.place(x=40, y=260)
+
+    order_button = ctk.CTkButton(main_box, text="Create Order", font=("Segoe UI", 32, "bold"), 
+                                 fg_color="#e59a6d", hover_color="#c98359", 
+                                 width=400, height=120, corner_radius=25)
+    order_button.place(x=600, y=50)
+    
+    logout_button = ctk.CTkButton(main_box, text="LOGOUT", font=("Segoe UI", 32, "bold"), 
+                                  fg_color="#513626", hover_color="#3d291d", 
+                                  width=400, height=120, corner_radius=25, 
+                                  command=lambda: show_login_window(profile_window))
+    logout_button.place(x=600, y=200)
+
+    # ================= Notifications Section with Scrollable Frame =================
+    notif_title = ctk.CTkLabel(main_box, text="Notifications:", font=("Segoe UI", 22, "bold"), text_color="white")
+    notif_title.place(x=40, y=390)
+
+    notif_frame = ctk.CTkScrollableFrame(main_box, width=1060, height=60, fg_color="transparent", 
+                                         scrollbar_button_color="#9e8d7a", scrollbar_button_hover_color="#c8b591")
+    notif_frame.place(x=40, y=425)
+
+    stock_alert = ctk.CTkLabel(notif_frame, text="• Low Stock: Whole Milk (2 Boxes remaining)", 
+                               font=("Segoe UI", 18), text_color="#ffd7ba", anchor="w")
+    stock_alert.pack(fill="x", pady=2)
+
     return profile_window
 
 def create_sales_report_window():
