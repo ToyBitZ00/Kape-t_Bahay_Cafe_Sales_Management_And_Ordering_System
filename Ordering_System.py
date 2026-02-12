@@ -122,24 +122,26 @@ def create_login_window():
                                     font=("Segoe UI", 14),
                                     fg_color="#FFFFFF",
                                     text_color="#000000")
-    descriptionLabel.pack(side="top", padx=(60,0), pady=(10,20), anchor="w")
+    descriptionLabel.pack(side="top", padx=(60,0), pady=(0,20), anchor="w")
 
     usernameEntry = ctk.CTkEntry(rightframe, 
                                  placeholder_text="Username", 
-                                 placeholder_text_color="#000000",
+                                 placeholder_text_color="#888888",
                                  width=345, 
                                  height=60, 
                                  font=("Segoe UI", 16),
+                                 text_color="#000000",
                                  fg_color="#FFFFFF",
                                  border_color="#dddddd")
-    usernameEntry.pack(pady=(10,10))
+    usernameEntry.pack(pady=(40,10))
 
     passwordEntry = ctk.CTkEntry(rightframe, 
                                  placeholder_text="Password", 
-                                 placeholder_text_color="#000000",
+                                 placeholder_text_color="#888888",
                                  width=345, 
                                  height=60, 
                                  font=("Segoe UI", 16), 
+                                 text_color="#000000",
                                  fg_color="#FFFFFF",
                                  show="*",
                                  border_color="#dddddd")
