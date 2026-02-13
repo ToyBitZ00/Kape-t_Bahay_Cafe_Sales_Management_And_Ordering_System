@@ -51,8 +51,6 @@ def show_profile_window(current=None):
     salesReportWindowCreation.withdraw()  # Hide the sales report window
 
     
-
-
 def show_sales_report_window(current=None):
     loginWindowCreation.withdraw()  # Hide the current window
     cartWIndowCreation.withdraw()  # Hide the cart window
@@ -450,11 +448,26 @@ def create_profile_window():
     sales_var = ctk.DoubleVar(value=500.00)
     orders_var = ctk.IntVar(value=42)
 
-    name_label = ctk.CTkLabel(profile_window, text="Mico Macapagal", 
+    name_label = ctk.CTkLabel(profile_window, text="Cashier Name", 
                               font=("Segoe UI", 54, "bold"), text_color="white")
     name_label.place(x=60, y=40)
     
-    role_badge = ctk.CTkLabel(profile_window, text="BARISTA", fg_color="#c8b591", text_color="black", 
+    
+    user_role = ctk.StringVar()
+    roles_label = ctk.StringVar(value="CASHIER")
+
+
+    def get_user_role(user_role):
+          # Change to "Cashier" to test the other role badge
+
+        if roles_label.get() == "ADMIN":
+            user_role.set("ADMIN")
+        elif roles_label.get() == "CASHIER":
+            user_role.set("CASHIER")
+            
+        return user_role
+
+    role_badge = ctk.CTkLabel(profile_window, textvariable=get_user_role(user_role), fg_color="#c8b591", text_color="black", 
                               corner_radius=15, font=("Segoe UI", 16, "bold"), width=110, height=35)
     role_badge.place(x=500, y=55)
 
