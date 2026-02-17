@@ -80,24 +80,28 @@ def create_login_window():
     leftframe.grid(row=0, column=0, sticky="news")
     leftframe.grid_propagate(False)
 
+    businessLogoImage = ctk.CTkImage(Image.open("kape't_bahay_logo.png"), size=(400, 400))
     businessLogo = ctk.CTkLabel(leftframe, 
-                                text="Logo Image",
+                                text="",
                                 font=("Segoe UI", 20, "bold"),
-                                text_color="#000000",
+                                text_color="#FFFFFF",
                                 width=400,
                                 height=400,
-                                fg_color="#FFFFFF")
+                                fg_color="#FFFFFF",
+                                image=businessLogoImage)
     businessLogo.pack(padx=(80,0), pady=(80,0), anchor="center")
-    #businessLogoImage = ctk.CTkImage(Image.open("kape't bahay logo.png"), size=(200, 200))
-    #businessLogo.configure(image=businessLogoImage)
+    
+    
     greetingLabel = ctk.CTkLabel(leftframe, 
                                  bg_color="transparent",
                                  text="Kape't Bahay Cafe", 
+                                 text_color="#FFFFFF",
                                  font=("Segoe UI", 40, "bold"))
     greetingLabel.pack(padx=(80,0), pady=(30,0), anchor="center")
 
     subGreetingLabel = ctk.CTkLabel(leftframe, 
                                  text="Ordering and Management System",
+                                 text_color="#000000",
                                  font=("Segoe UI", 30, "bold"),
                                  bg_color="transparent")
     subGreetingLabel.pack(padx=(85,0), pady=(0,0), anchor="center")
