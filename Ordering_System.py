@@ -1,67 +1,41 @@
 import customtkinter as ctk
 from tkinter import messagebox
 from PIL import Image, ImageTk
-import sqlite3
-import os
+
+root = ctk.CTk()
+root.withdraw()
+root.title("Kape'Bahay Ordering System")
+
+windows = {}
 
 
-# This block of code is what displays, withdraw and hides the windows.
-def show_login_window(current=None):
-    loginWindowCreation.deiconify()  # Show the login window
-    cartWIndowCreation.withdraw()  # Hide the cart window
-    orderWindowCreation.withdraw()  # Hide the orders window
-    managementWindowCreation.withdraw()  # Hide the management window
-    profileWindowCreation.withdraw()  # Hide the profile window
-    salesReportWindowCreation.withdraw()  # Hide the sales report window
-
-
-def show_cart_window(current=None):
-    loginWindowCreation.withdraw()  # Hide the current window
-    cartWIndowCreation.deiconify()  # Show the cart window
-    orderWindowCreation.withdraw()  # Hide the orders window
-    managementWindowCreation.withdraw()  # Hide the management window
-    profileWindowCreation.withdraw()  # Hide the profile window
-    salesReportWindowCreation.withdraw()  # Hide the sales report window
-
-
-def show_orders_window(current=None):
-    loginWindowCreation.withdraw()  # Hide the current window
-    cartWIndowCreation.withdraw()  # Hide the cart window
-    orderWindowCreation.deiconify()  # Show the orders window
-    managementWindowCreation.withdraw()  # Hide the management window
-    profileWindowCreation.withdraw()  # Hide the profile window
-    salesReportWindowCreation.withdraw()  # Hide the sales report window
-
-
-def show_management_window(current=None):
-    loginWindowCreation.withdraw()  # Hide the current window
-    cartWIndowCreation.withdraw()  # Hide the cart window
-    orderWindowCreation.withdraw()  # Hide the orders window
-    managementWindowCreation.deiconify()  # Show the management window
-    profileWindowCreation.withdraw()  # Hide the profile window
-    salesReportWindowCreation.withdraw()  # Hide the sales report window
-
-
-def show_profile_window(current=None):
-    loginWindowCreation.withdraw()  # Hide the current window
-    cartWIndowCreation.withdraw()  # Hide the cart window
-    orderWindowCreation.withdraw()  # Hide the orders window
-    managementWindowCreation.withdraw()  # Hide the management window
-    profileWindowCreation.deiconify()  # Show the profile window
-    salesReportWindowCreation.withdraw()  # Hide the sales report window
-
+def lazy_create_window(name):
+    if name in windows:
+        return windows[name]
     
-def show_sales_report_window(current=None):
-    loginWindowCreation.withdraw()  # Hide the current window
-    cartWIndowCreation.withdraw()  # Hide the cart window
-    orderWindowCreation.withdraw()  # Hide the orders window
-    managementWindowCreation.withdraw()  # Hide the management window
-    profileWindowCreation.withdraw()  # Hide the profile window
-    salesReportWindowCreation.deiconify()  # Show the sales report window
+    if name == "login":
+        w = create_login_window(root)
+    elif name == "cart":
+        w = create_cart_window(root)
+    elif name == "orders":
+        w = create_orders_window(root)
+    elif name == "management":
+        w = create_management_window(root)
+    elif name == "profile":
+        w = create_profile_window(root)
+    elif name == "sales":
+        w = create_sales_report_window(root)
+    else:
+        raise ValueError(f"Unknown window: {name}")
+    
+    windows[name] = w
+    w.withdraw()           
+    return w
+
 
 # Craete your windows here. You can also create more functions for other windows you will create in the future. Just make sure to follow the same format as the functions above.
-def create_login_window():
-    loginwindow = ctk.CTk()
+def create_login_window(master):
+    loginwindow = ctk.CTkToplevel(master)
     loginwindow.geometry("1280x720") # Window size
     loginwindow.title("Kape'Bahay Ordering System - Login") # Window Title
     loginwindow.resizable(False, False) # Disable window resizing
@@ -192,7 +166,7 @@ def create_login_window():
                                 height=50, 
                                 fg_color="#1E6F43", 
                                 hover_color="#14532D",
-                                command=lambda: show_profile_window(loginwindow))
+                                command=lambda: show_window("profile"))
     loginButton.pack(padx=(60,60), pady=(0,5), fill="both")
 
     signupLabel = ctk.CTkButton(rightframe, 
@@ -206,8 +180,8 @@ def create_login_window():
     return loginwindow
 
 
-def create_cart_window():
-    cartwindow = ctk.CTkToplevel()
+def create_cart_window(master):
+    cartwindow = ctk.CTkToplevel(master)
     cartwindow.geometry("1280x720")
     cartwindow.title("Kape'Bahay Ordering System - Cart")
 
@@ -415,7 +389,7 @@ def create_cart_window():
             card,
             text="+",
             width=30,
-            command=lambda n=name, p=price: add_to_cart(n, p)  # ✅ FIXED LAMBDA
+            command=lambda n=name, p=price: add_to_cart(n, p)  
         ).pack(pady=5)
 
         col += 1
@@ -427,23 +401,24 @@ def create_cart_window():
 
 
 # Orders Window
-def create_orders_window():
-    orders_window = ctk.CTkToplevel()
+def create_orders_window(master):
+    orders_window = ctk.CTkToplevel(master)
     orders_window.geometry("800x600")
     orders_window.title("Kape'Bahay Ordering System - Orders")
      # Further implementation of the orders window goes here.  
     return orders_window
 
+
 # Beverage management window
-def create_management_window():
-    settings_window = ctk.CTkToplevel()
+def create_management_window(master):
+    settings_window = ctk.CTkToplevel(master)
     settings_window.geometry("800x600")
     settings_window.title("Kape'Bahay Ordering System - Settings")
      # Further implementation of the settings window goes here.  
     return settings_window
 
-def create_profile_window():
-    profile_window = ctk.CTkToplevel()
+def create_profile_window(master):
+    profile_window = ctk.CTkToplevel(master)
     profile_window.geometry("1280x720")
     profile_window.title("Kape'Bahay - Barista Profile")
     profile_window.resizable(False, False)
@@ -505,13 +480,14 @@ def create_profile_window():
 
     order_button = ctk.CTkButton(main_box, text="Create Order", font=("Segoe UI", 32, "bold"), 
                                  fg_color="#e59a6d", hover_color="#c98359", 
-                                 width=400, height=120, corner_radius=25)
+                                 width=400, height=120, corner_radius=25,
+                                 command=lambda: show_window("cart"))
     order_button.place(x=600, y=50)
     
     logout_button = ctk.CTkButton(main_box, text="LOGOUT", font=("Segoe UI", 32, "bold"), 
                                   fg_color="#513626", hover_color="#3d291d", 
                                   width=400, height=120, corner_radius=25, 
-                                  command=lambda: show_login_window(profile_window))
+                                  command=lambda: show_window("login"))
     logout_button.place(x=600, y=200)
 
     # ================= Notifications Section with Scrollable Frame =================
@@ -528,28 +504,28 @@ def create_profile_window():
 
     return profile_window
 
-def create_sales_report_window():
-    report_window = ctk.CTkToplevel()
+def create_sales_report_window(master):
+    report_window = ctk.CTkToplevel(master)
     report_window.geometry("800x600")
     report_window.title("Kape'Bahay Ordering System - Sales Report")
      # Further implementation of the sales report window goes here.  
     return report_window
  
-# Also replicate this part for other windows you will create in the future.
-loginWindowCreation = create_login_window()
-cartWIndowCreation = create_cart_window()
-orderWindowCreation = create_orders_window()
-managementWindowCreation = create_management_window()
-profileWindowCreation = create_profile_window()
-salesReportWindowCreation = create_sales_report_window()
 
-# Hides other window at the startup of the program.
-cartWIndowCreation.withdraw()  
-orderWindowCreation.withdraw()
-managementWindowCreation.withdraw()
-profileWindowCreation.withdraw()
-salesReportWindowCreation.withdraw()
+loginWindowCreation = lazy_create_window("login")
+loginWindowCreation.deiconify()
+loginWindowCreation.lift()
 
+def show_window(name):
+    target = lazy_create_window(name)
 
-# Do not mess with this part.
-loginWindowCreation.mainloop()
+    # Hide every other existing window
+    for key, win in windows.items():
+        if key != name and win is not None and win.winfo_exists():
+            win.withdraw()
+
+    target.deiconify()
+    target.lift()
+    target.focus_force()
+
+root.mainloop()
