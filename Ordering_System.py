@@ -1,6 +1,8 @@
 import customtkinter as ctk
 from tkinter import messagebox
 from PIL import Image, ImageTk
+from database import add_user, login_user, verify_user
+import sqlite3 
 
 root = ctk.CTk()
 root.withdraw()
@@ -166,7 +168,7 @@ def create_login_window(master):
                                 height=50, 
                                 fg_color="#1E6F43", 
                                 hover_color="#14532D",
-                                command=lambda: show_window("profile"))
+                                command=lambda: login())
     loginButton.pack(padx=(60,60), pady=(0,5), fill="both")
 
     signupLabel = ctk.CTkButton(rightframe, 
@@ -176,6 +178,23 @@ def create_login_window(master):
                                 text_color="#3032AA",
                                 hover_color="FFFFFF")    
     signupLabel.pack(pady=(0,5))
+
+
+    def login():
+        username = usernameEntry.get()
+        password = passwordEntry.get()
+
+        user = verify_user(username, password)
+
+        if user:
+            user_id, username, role = user
+            messagebox.showinfo("Success", f"Welcome {username} ({role})")
+
+            # switch window
+            lazy_create_window("profile")
+
+        else:
+            messagebox.showerror("Error", "Invalid username or password")
 
     return loginwindow
 
