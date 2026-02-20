@@ -1,12 +1,152 @@
 import customtkinter as ctk
 from tkinter import messagebox
 from PIL import Image, ImageTk
-from database import add_user, login_user, verify_user
-import sqlite3 
+from database import create_connection, add_user, delete_user
+import hashlib
+import sqlite3
+
+#/ ================== Database Functions =================
+
+# Database connection function
+def create_connection():
+    conn = sqlite3.connect("kape't_bahay_database.db")
+    return conn
+
+# Used to hash passwords for security purposes.
+def hash_password(password):
+    return hashlib.sha256(password.encode()).hexdigest()
+
+# Used to add a user to the database.
+def add_user(username, password, role):
+    conn = create_connection()
+    cursor = conn.cursor()
+
+    hashed_pw = hash_password(password)
+
+    try:
+        cursor.execute(
+            "INSERT INTO users (username, password, role) VALUES (?, ?, ?)",
+            (username, hashed_pw, role)
+        )
+        conn.commit()
+        return True
+    except sqlite3.IntegrityError:
+        return False  # username already exists
+    finally:
+        result = cursor.execute("SELECT * FROM users").fetchall()
+        print(result)
+        conn.commit()
+        conn.close()
+
+# Used to delete users from the users table.
+def delete_user(): 
+    conn = create_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("DELETE FROM users")
+    conn.commit()
+
+    cursor.execute("SELECT * FROM users")
+    rows = cursor.fetchall()
+
+    print("USERS AFTER DELETE:", rows)
+
+    conn.commit()
+    conn.close()
+
+#add_user("Mico", "admin0099", "admin")
+#delete_user()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#/ =================== GUI Functions =====================
+
 
 root = ctk.CTk()
 root.withdraw()
 root.title("Kape'Bahay Ordering System")
+
 
 windows = {}
 
@@ -168,7 +308,7 @@ def create_login_window(master):
                                 height=50, 
                                 fg_color="#1E6F43", 
                                 hover_color="#14532D",
-                                command=lambda: login())
+                                command=lambda: show_window("profile"))
     loginButton.pack(padx=(60,60), pady=(0,5), fill="both")
 
     signupLabel = ctk.CTkButton(rightframe, 
@@ -178,24 +318,6 @@ def create_login_window(master):
                                 text_color="#3032AA",
                                 hover_color="FFFFFF")    
     signupLabel.pack(pady=(0,5))
-
-
-    def login():
-        username = usernameEntry.get()
-        password = passwordEntry.get()
-
-        user = verify_user(username, password)
-
-        if user:
-            user_id, username, role = user
-            messagebox.showinfo("Success", f"Welcome {username} ({role})")
-
-            # switch window
-            lazy_create_window("profile")
-
-        else:
-            messagebox.showerror("Error", "Invalid username or password")
-
     return loginwindow
 
 
