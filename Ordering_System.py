@@ -1,10 +1,13 @@
 import customtkinter as ctk
 from tkinter import messagebox
 from PIL import Image, ImageTk
-from database import create_connection, add_user, delete_user
 import hashlib
 import sqlite3
 
+current_user = {
+    "username": None,
+    "role": None
+}
 #/ ================== Database Functions =================
 
 # Database connection function
@@ -54,82 +57,22 @@ def delete_user():
     conn.commit()
     conn.close()
 
-#add_user("Mico", "admin0099", "admin")
+#add_user("ivan", "admin00102", "admin")
 #delete_user()
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+def verify_user(username, password):
+    hashed = hash_password(password)
+
+    conn = create_connection()
+    cursor = conn.cursor()
+    
+    cursor.execute("SELECT * FROM users WHERE username=? AND password=?", (username, hashed))
+    user = cursor.fetchone()
+    print(user)
+    conn.close()
+
+    return user is not None
 
 
 
@@ -173,6 +116,49 @@ def lazy_create_window(name):
     windows[name] = w
     w.withdraw()           
     return w
+
+
+def verify_user_login(username, password):
+    """
+    Checks if the provided username and password match a record in the database.
+    Returns (success: bool, role: str or None, error_message: str or None)
+    """
+    if not username.strip() or not password:
+        return False, None, "Please enter both username and password"
+
+    try:
+        conn = create_connection()
+        cursor = conn.cursor()
+
+        # Get the stored hash and role for this username
+        cursor.execute("""
+            SELECT password, role 
+            FROM users 
+            WHERE username = ?
+        """, (username.strip(),))
+
+        result = cursor.fetchone()
+
+        conn.close()
+
+        if result is None:
+            return False, None, "Username not found"
+
+        stored_hash, role = result
+
+        entered_hash = hash_password(password)
+
+        if entered_hash == stored_hash:
+            return True, role, None
+        else:
+            return False, None, "Incorrect password"
+
+    except sqlite3.Error as e:
+        return False, None, f"Database error: {str(e)}"
+    except Exception as e:
+        return False, None, f"Unexpected error: {str(e)}"
+
+
 
 
 # Craete your windows here. You can also create more functions for other windows you will create in the future. Just make sure to follow the same format as the functions above.
@@ -308,7 +294,7 @@ def create_login_window(master):
                                 height=50, 
                                 fg_color="#1E6F43", 
                                 hover_color="#14532D",
-                                command=lambda: show_window("profile"))
+                                command=lambda: attempt_login())
     loginButton.pack(padx=(60,60), pady=(0,5), fill="both")
 
     signupLabel = ctk.CTkButton(rightframe, 
@@ -318,6 +304,26 @@ def create_login_window(master):
                                 text_color="#3032AA",
                                 hover_color="FFFFFF")    
     signupLabel.pack(pady=(0,5))
+
+
+    def attempt_login():
+        username = usernameEntry.get()
+        password = passwordEntry.get()
+
+        success, user_role, error_msg = verify_user_login(username, password)
+
+        if success:
+            current_user["username"] = username
+            current_user["role"] = user_role
+            messagebox.showinfo("Success", f"Welcome, {username}! ({user_role})")
+            show_window("profile")  # or wherever you want to go after login
+        else:
+            # Shows the specific error
+            messagebox.showerror("Login Failed", error_msg)
+            passwordEntry.delete(0, ctk.END)
+            passwordEntry.focus_set()
+
+
     return loginwindow
 
 
@@ -560,7 +566,7 @@ def create_management_window(master):
 
 def create_profile_window(master):
     profile_window = ctk.CTkToplevel(master)
-    profile_window.geometry("1280x720")
+    profile_window.geometry("1020x730")
     profile_window.title("Kape'Bahay - Barista Profile")
     profile_window.resizable(False, False)
     profile_window.configure(fg_color="#120f0d")
@@ -568,31 +574,23 @@ def create_profile_window(master):
     sales_var = ctk.DoubleVar(value=500.00)
     orders_var = ctk.IntVar(value=42)
 
-    name_label = ctk.CTkLabel(profile_window, text="Cashier Name", 
+    
+    display_name = current_user["username"].upper()  # or format nicely
+    role_text = current_user["role"].upper()
+    
+
+    name_label = ctk.CTkLabel(profile_window, text=f"{display_name}", 
                               font=("Segoe UI", 54, "bold"), text_color="white")
-    name_label.place(x=60, y=40)
+    name_label.grid(row=0, column=0, padx=(50, 0), pady=(40, 40), sticky="w")
     
     
-    user_role = ctk.StringVar()
-    roles_label = ctk.StringVar(value="CASHIER")
-
-
-    def get_user_role(user_role):
-          # Change to "Cashier" to test the other role badge
-
-        if roles_label.get() == "ADMIN":
-            user_role.set("ADMIN")
-        elif roles_label.get() == "CASHIER":
-            user_role.set("CASHIER")
-            
-        return user_role
-
-    role_badge = ctk.CTkLabel(profile_window, textvariable=get_user_role(user_role), fg_color="#c8b591", text_color="black", 
+    role_badge = ctk.CTkLabel(profile_window, text=f"{role_text}", fg_color="#c8b591", text_color="black", 
                               corner_radius=15, font=("Segoe UI", 16, "bold"), width=110, height=35)
-    role_badge.place(x=500, y=55)
+    role_badge.grid(row=0, column=1, padx=(10, 720), pady=(25, 20), sticky="w")
 
-    main_box = ctk.CTkFrame(profile_window, fg_color="#6f5e4c", corner_radius=25, width=1160, height=500)
-    main_box.place(relx=0.5, rely=0.6, anchor="center")
+    main_box = ctk.CTkFrame(profile_window, fg_color="#6f5e4c", corner_radius=20, width=960, height=540)
+    main_box.grid(row=1, column=0, columnspan=2, padx=30, pady=(0), sticky="nsew")
+    main_box.grid_propagate(False)
 
     v_divider = ctk.CTkFrame(main_box, width=2, height=380, fg_color="#9e8d7a")
     v_divider.place(x=450, y=0)
@@ -623,21 +621,25 @@ def create_profile_window(master):
                                  fg_color="#e59a6d", hover_color="#c98359", 
                                  width=400, height=120, corner_radius=25,
                                  command=lambda: show_window("cart"))
-    order_button.place(x=600, y=50)
+    order_button.place(x=505, y=50)
     
     logout_button = ctk.CTkButton(main_box, text="LOGOUT", font=("Segoe UI", 32, "bold"), 
                                   fg_color="#513626", hover_color="#3d291d", 
                                   width=400, height=120, corner_radius=25, 
                                   command=lambda: show_window("login"))
-    logout_button.place(x=600, y=200)
+    logout_button.place(x=505, y=200)
 
     # ================= Notifications Section with Scrollable Frame =================
     notif_title = ctk.CTkLabel(main_box, text="Notifications:", font=("Segoe UI", 22, "bold"), text_color="white")
-    notif_title.place(x=40, y=390)
+    notif_title.place(x=35, y=390)
 
-    notif_frame = ctk.CTkScrollableFrame(main_box, width=1060, height=60, fg_color="transparent", 
-                                         scrollbar_button_color="#9e8d7a", scrollbar_button_hover_color="#c8b591")
-    notif_frame.place(x=40, y=425)
+    notif_frame = ctk.CTkScrollableFrame(main_box, 
+                                         width=870, 
+                                         height=40, 
+                                         fg_color="transparent", 
+                                         scrollbar_button_color="#6f5e4c", 
+                                         scrollbar_button_hover_color="#6f5e4c")
+    notif_frame.place(x=35, y=425)
 
     stock_alert = ctk.CTkLabel(notif_frame, text="• Low Stock: Whole Milk (2 Boxes remaining)", 
                                font=("Segoe UI", 18), text_color="#ffd7ba", anchor="w")
