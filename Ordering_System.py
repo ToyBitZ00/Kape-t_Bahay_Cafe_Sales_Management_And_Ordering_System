@@ -15,12 +15,33 @@ def create_connection():
     conn = sqlite3.connect("kape't_bahay_database.db")
     return conn
 
+
+def create_database():
+    conn = create_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT UNIQUE NOT NULL,
+            password TEXT NOT NULL,
+            role TEXT NOT NULL,
+            email TEXT NOT NULL
+        )
+    """)
+    print("Database and 'users' table created successfully.")
+
+    conn.commit()
+    conn.close()
+
+#create_database()
+
 # Used to hash passwords for security purposes.
 def hash_password(password):
     return hashlib.sha256(password.encode()).hexdigest()
 
 # Used to add a user to the database.
-def add_user(username, password, role):
+def add_user(username, password, role, email):
     conn = create_connection()
     cursor = conn.cursor()
 
@@ -28,8 +49,8 @@ def add_user(username, password, role):
 
     try:
         cursor.execute(
-            "INSERT INTO users (username, password, role) VALUES (?, ?, ?)",
-            (username, hashed_pw, role)
+            "INSERT INTO users (username, password, role, email) VALUES (?, ?, ?, ?)",
+            (username, hashed_pw, role, email)
         )
         conn.commit()
         return True
@@ -58,11 +79,12 @@ def delete_user():
     conn.commit()
     conn.close()
 
-#add_user("mico", "admin0099", "admin")
-#add_user("paul", "admin00100", "admin")
-#add_user("amiel", "admin00101", "admin")
-#add_user("ivan", "admin00102", "admin")
-#add_user("kyle", "admin00104", "admin")
+#add_user("mico", "admin0001", "cashier", "mic0@gmail.com")
+#add_user("paul", "admin0002", "cashier", "pa6308191@gmail.com")
+
+#add_user("amiel", "admin0003", "admin")
+#add_user("ivan", "admin0004", "admin")
+#add_user("kyle", "admin0005", "admin")
 #delete_user()
 
 
@@ -78,13 +100,6 @@ def verify_user(username, password):
     conn.close()
 
     return user is not None
-
-
-
-
-
-
-
 
 
 
@@ -196,7 +211,7 @@ def create_login_window(master):
                                 text_color="#FFFFFF",
                                 width=400,
                                 height=400,
-                                fg_color="#FFFFFF",
+                                fg_color="transparent",
                                 image=businessLogoImage)
     businessLogo.pack(padx=(80,0), pady=(80,0), anchor="center")
     
@@ -205,13 +220,13 @@ def create_login_window(master):
                                  bg_color="transparent",
                                  text="Kape't Bahay Cafe", 
                                  text_color="#FFFFFF",
-                                 font=("Segoe UI", 40, "bold"))
+                                 font=("Comic Sans MS", 40, "bold"))
     greetingLabel.pack(padx=(80,0), pady=(30,0), anchor="center")
 
     subGreetingLabel = ctk.CTkLabel(leftframe, 
                                  text="Ordering and Management System",
                                  text_color="#FFFFFF",
-                                 font=("Segoe UI", 30, "bold"),
+                                 font=("Comic Sans MS", 30, "bold"),
                                  bg_color="transparent")
     subGreetingLabel.pack(padx=(85,0), pady=(0,0), anchor="center")
     
@@ -360,8 +375,167 @@ def create_login_window(master):
 
 def create_signup_window(master):
     signupwindow = ctk.CTkToplevel(master)
-    signupwindow.geometry("800x600")
+    signupwindow.geometry("486x720")
     signupwindow.title("Kape'Bahay Ordering System - Signup")
+    signupwindow.resizable(False, False)
+    signupwindow.configure(fg_color="#43382F")
+
+    boxFrame = ctk.CTkFrame(signupwindow, 
+                            fg_color="#F2F1EF",
+                            corner_radius=15,
+                            width=460,
+                            height=660,
+                            border_width=2,
+                            border_color="#dddddd")
+    boxFrame.pack(padx=(20,20), pady=(20,20), fill="both", expand=True)
+    boxFrame.pack_propagate(False)
+    boxFrame.grid_propagate(False)
+
+    # 10 Rows, 1 Column
+
+    signupLabel = ctk.CTkLabel(boxFrame,
+                              text="Sign Up",
+                              font=("Segoe UI Light", 40, "bold"),
+                              fg_color="transparent",
+                              text_color="#000000")
+    signupLabel.grid(row=0, column=0, padx=20, pady=(20,0), sticky="w")
+
+    infoLabel = ctk.CTkLabel(boxFrame,
+                             text="Create an account or",   
+                                font=("Arial", 14),
+                                fg_color="transparent",
+                                text_color="#000000")
+    infoLabel.grid(row=1, column=0, padx=22, pady=(0,20), sticky="w")
+
+    signinButton = ctk.CTkButton(boxFrame, 
+                                text="Sign in", 
+                                font=("Arial", 14, "underline"), 
+                                width=5, 
+                                height=5, 
+                                fg_color="transparent", 
+                                text_color="#3032AA",
+                                hover_color="#FFFFFF",
+                                command=lambda: (signupwindow.destroy(), lazy_create_window("login").deiconify()))
+    signinButton.place(x=158, y=77)
+    
+    emailLabel = ctk.CTkLabel(boxFrame,
+                              text="Email Address",
+                                font=("Arial", 14),
+                                fg_color="transparent",
+                                text_color="#000000")
+    emailLabel.grid(row=2, column=0, padx=(28,0), pady=(0,0), sticky="w")
+
+    emailEntry = ctk.CTkEntry(boxFrame,
+                              placeholder_text="Enter your email address",
+                                width=400,
+                                height=60,
+                                font=("Arial", 14),
+                                text_color="#000000",
+                                fg_color="#FFFFFF",
+                                border_color="#dddddd",
+                                corner_radius=10)
+    emailEntry.grid(row=3, column=0, padx=22, pady=(0,10), sticky="ew")
+
+    usernamelabel = ctk.CTkLabel(boxFrame,
+                                text="Username",
+                                font=("Arial", 14),
+                                fg_color="transparent",
+                                text_color="#000000")
+    usernamelabel.grid(row=4, column=0, padx=(28,0), pady=(0,0), sticky="w")
+
+    usernameEntry = ctk.CTkEntry(boxFrame,
+                                width=400,
+                                height=60,
+                                placeholder_text="Enter your username",
+                                font=("Arial", 14),
+                                text_color="#000000",
+                                fg_color="#FFFFFF",
+                                border_color="#dddddd",
+                                corner_radius=10,
+                                show="*")
+    usernameEntry.grid(row=5, column=0, padx=22, pady=(0,10), sticky="ew")
+
+    passwordLabel = ctk.CTkLabel(boxFrame,
+                                text="Password",
+                                font=("Arial", 14),
+                                fg_color="transparent",
+                                text_color="#000000")
+    passwordLabel.grid(row=6, column=0, padx=(28,0), pady=(0,0), sticky="w")
+
+    passwordEntry = ctk.CTkEntry(boxFrame,
+                                width=400,
+                                height=60,
+                                placeholder_text="Enter your password",
+                                font=("Arial", 14),
+                                text_color="#000000",
+                                fg_color="#FFFFFF",
+                                border_color="#dddddd",
+                                corner_radius=10,
+                                show="*")
+    passwordEntry.grid(row=7, column=0, padx=22, pady=(0,10), sticky="ew")
+
+    repeatPasswordLabel = ctk.CTkLabel(boxFrame,
+                                text="Repeat Password",
+                                font=("Arial", 14),
+                                fg_color="transparent",
+                                text_color="#000000")
+    repeatPasswordLabel.grid(row=8, column=0, padx=(28,0), pady=(0,0), sticky="w")
+
+    repeatPasswordEntry = ctk.CTkEntry(boxFrame,
+                                width=400,
+                                height=60,
+                                placeholder_text="Repeat your password",
+                                font=("Arial", 14),
+                                text_color="#000000",
+                                fg_color="#FFFFFF",
+                                border_color="#dddddd",
+                                corner_radius=10,
+                                show="*")
+    repeatPasswordEntry.grid(row=9, column=0, padx=22, pady=(0,10), sticky="ew")
+
+    show_password_var = ctk.BooleanVar()
+
+    def toggle_password():
+        if show_password_var.get():
+            passwordEntry.configure(show="")
+            repeatPasswordEntry.configure(show="")
+        else:
+            passwordEntry.configure(show="*")
+            repeatPasswordEntry.configure(show="*")
+
+    show_password_checkbox = ctk.CTkCheckBox(boxFrame,
+                                            text="Show Password",
+                                            variable=show_password_var,
+                                            onvalue=True,
+                                            offvalue=False,
+                                            checkbox_width=16,
+                                            checkbox_height=16,
+                                            checkmark_color="#43382F",
+                                            border_width=2,
+                                            hover_color="#43382F",
+                                            text_color="#000000",
+                                            command=toggle_password,
+                                            corner_radius=2)
+    show_password_checkbox.grid(row=10, column=0, padx=(28,0), pady=(0,0), sticky="w")
+
+    signupButton = ctk.CTkButton(boxFrame,
+                                text="Sign Up",
+                                font=ctk.CTkFont(size=20),
+                                width=200,
+                                height=50,
+                                fg_color="#1E6F43",
+                                hover_color="#14532D",
+                                command=lambda: attempt_signup())
+    signupButton.grid(row=11, column=0, padx=22, pady=(20,0), sticky="ew")
+    
+    descriptionLabel = ctk.CTkLabel(boxFrame,
+                                    text="By signing up to create an account, you agree to our \nTerms of Service and Privacy Policy.",
+                                    font=("Segoe UI Light", 12),
+                                    fg_color="transparent",
+                                    text_color="#5E5E5E")
+    descriptionLabel.grid(row=12, column=0, padx=22, pady=(20,20), sticky="ew")
+
+
 
 
     def close_signup():
@@ -668,6 +842,7 @@ def create_profile_window(master):
                                  command=lambda: show_window("cart"))
     order_button.place(x=505, y=50)
     
+
     logout_button = ctk.CTkButton(main_box, text="LOGOUT", font=("Segoe UI", 32, "bold"), 
                                   fg_color="#513626", hover_color="#3d291d", 
                                   width=400, height=120, corner_radius=25, 
