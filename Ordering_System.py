@@ -41,6 +41,7 @@ def add_user(username, password, role):
         conn.commit()
         conn.close()
 
+
 # Used to delete users from the users table.
 def delete_user(): 
     conn = create_connection()
@@ -57,7 +58,11 @@ def delete_user():
     conn.commit()
     conn.close()
 
+#add_user("mico", "admin0099", "admin")
+#add_user("paul", "admin00100", "admin")
+#add_user("amiel", "admin00101", "admin")
 #add_user("ivan", "admin00102", "admin")
+#add_user("kyle", "admin00104", "admin")
 #delete_user()
 
 
@@ -100,6 +105,8 @@ def lazy_create_window(name):
     
     if name == "login":
         w = create_login_window(root)
+    elif name == "signup":
+        w = create_signup_window(root)
     elif name == "cart":
         w = create_cart_window(root)
     elif name == "orders":
@@ -203,7 +210,7 @@ def create_login_window(master):
 
     subGreetingLabel = ctk.CTkLabel(leftframe, 
                                  text="Ordering and Management System",
-                                 text_color="#000000",
+                                 text_color="#FFFFFF",
                                  font=("Segoe UI", 30, "bold"),
                                  bg_color="transparent")
     subGreetingLabel.pack(padx=(85,0), pady=(0,0), anchor="center")
@@ -297,13 +304,14 @@ def create_login_window(master):
                                 command=lambda: attempt_login())
     loginButton.pack(padx=(60,60), pady=(0,5), fill="both")
 
-    signupLabel = ctk.CTkButton(rightframe, 
+    signupButton = ctk.CTkButton(rightframe, 
                                 text="Don't have an account?", 
                                 font=ctk.CTkFont(size=14), 
                                 fg_color="transparent", 
                                 text_color="#3032AA",
-                                hover_color="FFFFFF")    
-    signupLabel.pack(pady=(0,5))
+                                hover_color="#FFFFFF",
+                                command=lambda: open_signup_window())    
+    signupButton.pack(pady=(0,5))
 
 
     def attempt_login():
@@ -324,7 +332,44 @@ def create_login_window(master):
             passwordEntry.focus_set()
 
 
+    def open_signup_window():
+        signupWindow = lazy_create_window("signup")
+
+        if "signup" in windows and windows["signup"].winfo_exists():
+            windows["signup"].destroy()
+        
+        signupWindow = create_signup_window(root)
+        windows["signup"] = signupWindow
+
+        signupWindow.deiconify()
+        signupWindow.lift()
+        signupWindow.focus_force()
+
+        loginwindow.grab_set()  
+        signupWindow.grab_set()
+        signupWindow.attributes("-topmost", True)
+        
+        signupWindow.wait_window()
+
+        loginwindow.grab_release()
+        loginwindow.lift()
+        loginwindow.focus_force()
+        
     return loginwindow
+
+
+def create_signup_window(master):
+    signupwindow = ctk.CTkToplevel(master)
+    signupwindow.geometry("800x600")
+    signupwindow.title("Kape'Bahay Ordering System - Signup")
+
+
+    def close_signup():
+        signupwindow.destroy()
+
+    signupwindow.protocol("WM_DELETE_WINDOW", close_signup)
+    signupwindow.withdraw()
+    return signupwindow
 
 
 def create_cart_window(master):
@@ -575,18 +620,18 @@ def create_profile_window(master):
     orders_var = ctk.IntVar(value=42)
 
     
-    display_name = current_user["username"].upper()  # or format nicely
-    role_text = current_user["role"].upper()
-    
-
-    name_label = ctk.CTkLabel(profile_window, text=f"{display_name}", 
+    name_label = ctk.CTkLabel(profile_window, text="---", 
                               font=("Segoe UI", 54, "bold"), text_color="white")
     name_label.grid(row=0, column=0, padx=(50, 0), pady=(40, 40), sticky="w")
     
-    
-    role_badge = ctk.CTkLabel(profile_window, text=f"{role_text}", fg_color="#c8b591", text_color="black", 
+    role_badge = ctk.CTkLabel(profile_window, text="---", fg_color="#c8b591", text_color="black", 
                               corner_radius=15, font=("Segoe UI", 16, "bold"), width=110, height=35)
     role_badge.grid(row=0, column=1, padx=(10, 720), pady=(25, 20), sticky="w")
+
+    
+    profile_window.name_label = name_label
+    profile_window.role_badge = role_badge
+
 
     main_box = ctk.CTkFrame(profile_window, fg_color="#6f5e4c", corner_radius=20, width=960, height=540)
     main_box.grid(row=1, column=0, columnspan=2, padx=30, pady=(0), sticky="nsew")
@@ -662,10 +707,20 @@ loginWindowCreation.lift()
 def show_window(name):
     target = lazy_create_window(name)
 
-    # Hide every other existing window
+    # Hide others
     for key, win in windows.items():
         if key != name and win is not None and win.winfo_exists():
             win.withdraw()
+
+    if name == "profile" and current_user["username"]:
+        # Update labels BEFORE showing
+        target.name_label.configure(text=current_user["username"].upper())
+        target.role_badge.configure(text=current_user["role"].upper())
+        # optional: change badge color based on role
+        if current_user["role"].upper() == "ADMIN":
+            target.role_badge.configure(fg_color="#c8b591")
+        else:
+            target.role_badge.configure(fg_color="#646a77")  # gray for cashier
 
     target.deiconify()
     target.lift()
