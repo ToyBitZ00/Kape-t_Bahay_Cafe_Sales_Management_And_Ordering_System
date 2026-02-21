@@ -375,7 +375,7 @@ def create_login_window(master):
 
 def create_signup_window(master):
     signupwindow = ctk.CTkToplevel(master)
-    signupwindow.geometry("486x720")
+    signupwindow.geometry("570x780")
     signupwindow.title("Kape'Bahay Ordering System - Signup")
     signupwindow.resizable(False, False)
     signupwindow.configure(fg_color="#43382F")
@@ -383,11 +383,9 @@ def create_signup_window(master):
     boxFrame = ctk.CTkFrame(signupwindow, 
                             fg_color="#F2F1EF",
                             corner_radius=15,
-                            width=460,
-                            height=660,
                             border_width=2,
                             border_color="#dddddd")
-    boxFrame.pack(padx=(20,20), pady=(20,20), fill="both", expand=True)
+    boxFrame.pack(padx=(40,40), pady=(40,40), fill="both", expand=True)
     boxFrame.pack_propagate(False)
     boxFrame.grid_propagate(False)
 
@@ -427,14 +425,14 @@ def create_signup_window(master):
 
     emailEntry = ctk.CTkEntry(boxFrame,
                               placeholder_text="Enter your email address",
-                                width=400,
+                                width=450,
                                 height=60,
                                 font=("Arial", 14),
                                 text_color="#000000",
                                 fg_color="#FFFFFF",
                                 border_color="#dddddd",
                                 corner_radius=10)
-    emailEntry.grid(row=3, column=0, padx=22, pady=(0,10), sticky="ew")
+    emailEntry.grid(row=3, column=0, padx=20, pady=(0,10), sticky="ew")
 
     usernamelabel = ctk.CTkLabel(boxFrame,
                                 text="Username",
@@ -516,7 +514,7 @@ def create_signup_window(master):
                                             text_color="#000000",
                                             command=toggle_password,
                                             corner_radius=2)
-    show_password_checkbox.grid(row=10, column=0, padx=(28,0), pady=(0,0), sticky="w")
+    show_password_checkbox.grid(row=10, column=0, padx=(28,0), pady=(0,0), sticky="ew")
 
     signupButton = ctk.CTkButton(boxFrame,
                                 text="Sign Up",
@@ -524,8 +522,8 @@ def create_signup_window(master):
                                 width=200,
                                 height=50,
                                 fg_color="#1E6F43",
-                                hover_color="#14532D",
-                                command=lambda: attempt_signup())
+                                hover_color="#14532D"
+                                """command=lambda: attempt_signup()""")
     signupButton.grid(row=11, column=0, padx=22, pady=(20,0), sticky="ew")
     
     descriptionLabel = ctk.CTkLabel(boxFrame,
