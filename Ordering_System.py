@@ -3,6 +3,7 @@ from tkinter import messagebox
 from PIL import Image, ImageTk
 import hashlib
 import sqlite3
+import re
 
 current_user = {
     "username": None,
@@ -101,6 +102,21 @@ def verify_user(username, password):
 
     return user is not None
 
+
+def verify_signup(username, password, repeat_password, email):
+    hashed_pass = hash_password(password)
+    hased_repeat_pass = hash_password(repeat_password)
+
+    if hashed_pass != hased_repeat_pass:
+        return False, "Passwords do not match"
+
+    conn = create_connection()
+    cursor = conn.cursor()
+    
+    cursor.execute("SELECT * FROM users WHERE username=? AND password=? AND email=?", (username, hashed_pass, email))
+    user = cursor.fetchone()
+    print(user)
+    conn.close()
 
 
 #/ =================== GUI Functions =====================
@@ -449,8 +465,7 @@ def create_signup_window(master):
                                 text_color="#000000",
                                 fg_color="#FFFFFF",
                                 border_color="#dddddd",
-                                corner_radius=10,
-                                show="*")
+                                corner_radius=10)
     usernameEntry.grid(row=5, column=0, padx=22, pady=(0,10), sticky="ew")
 
     passwordLabel = ctk.CTkLabel(boxFrame,
@@ -522,8 +537,8 @@ def create_signup_window(master):
                                 width=200,
                                 height=50,
                                 fg_color="#1E6F43",
-                                hover_color="#14532D"
-                                """command=lambda: attempt_signup()""")
+                                hover_color="#14532D",
+                                command=lambda: attempt_signup())
     signupButton.grid(row=11, column=0, padx=22, pady=(20,0), sticky="ew")
     
     descriptionLabel = ctk.CTkLabel(boxFrame,
@@ -534,6 +549,88 @@ def create_signup_window(master):
     descriptionLabel.grid(row=12, column=0, padx=22, pady=(20,20), sticky="ew")
 
 
+    def is_valid_email(email):
+        pattern = r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$'
+        return bool(re.match(pattern, email.strip()))
+
+    def username_exists(username):
+        conn = create_connection()
+        cursor = conn.cursor()
+        cursor.execute("SELECT 1 FROM users WHERE username = ?", (username.strip(),))
+        exists = cursor.fetchone() is not None
+        conn.close()
+        return exists
+
+    def email_exists(email):
+        conn = create_connection()
+        cursor = conn.cursor()
+        cursor.execute("SELECT 1 FROM users WHERE email = ?", (email.strip(),))
+        exists = cursor.fetchone() is not None
+        conn.close()
+        return exists
+
+    def attempt_signup():
+        username = usernameEntry.get().strip()
+        email    = emailEntry.get().strip()
+        password = passwordEntry.get()
+        repeat   = repeatPasswordEntry.get()
+
+        # 1. Basic validation
+        if not email:
+            messagebox.showwarning("Input Error", "Email is required.")
+            emailEntry.focus()
+            return
+        
+        if not username:
+            messagebox.showwarning("Input Error", "Username is required.")
+            usernameEntry.focus()
+            return
+
+        if not is_valid_email(email):
+            messagebox.showwarning("Input Error", "Please enter a valid email address.")
+            emailEntry.focus()
+            return
+
+        if not password:
+            messagebox.showwarning("Input Error", "Password is required.")
+            passwordEntry.focus()
+            return
+
+        if password != repeat:
+            messagebox.showwarning("Input Error", "Passwords do not match.")
+            repeatPasswordEntry.delete(0, "end")
+            repeatPasswordEntry.focus()
+            return
+
+        if len(password) < 6:
+            messagebox.showwarning("Input Error", "Password must be at least 6 characters long.")
+            passwordEntry.focus()
+            return
+
+        # 2. Check if username or email already exists
+        if username_exists(username):
+            messagebox.showerror("Signup Failed", "Username already exists. Please choose another.")
+            usernameEntry.delete(0, "end")
+            usernameEntry.focus()
+            return
+
+        if email_exists(email):
+            messagebox.showerror("Signup Failed", "This email is already registered.")
+            emailEntry.delete(0, "end")
+            emailEntry.focus()
+            return
+
+        # 3. All checks passed → create user as "cashier"
+        success = add_user(username, password, "cashier", email)
+
+        if success:
+            messagebox.showinfo("Success", f"Account created successfully!\nWelcome, {username} (Cashier)")
+            signupwindow.destroy()
+            # Go back to login window
+            login_win = lazy_create_window("login")
+            login_win.deiconify()
+        else:
+            messagebox.showerror("Error", "Failed to create account. Please try again.")
 
 
     def close_signup():
