@@ -4,11 +4,66 @@ from PIL import Image, ImageTk
 import hashlib
 import sqlite3
 import re
+from datetime import datetime
 
 current_user = {
     "username": None,
     "role": None
 }
+
+products = [
+            ("0", "Milo Malt", 155.00),
+            ("0", "White salted", 155.00),
+            ("0", "Caramel", 145.00),
+            ("0","Mocha", 145.00),
+            ("1","Classic Spanish", 110.00),
+            ("1","Spanish cinnamon", 115.00),
+            ("1","Spanish Mocha", 115.00),
+            ("2","Classic Seasalt", 115.00),
+            ("2","Seasalt Caramel", 120.00),
+            ("2","Hazelnut Paline", 120.00),
+            ("3","Black Irish", 105.00),
+            ("3","Black Seasalt", 110.00),
+            ("3","Black Vanilla Cream", 110.00),
+            ("4","Choco Cinnamon", 110.00),
+            ("4","Choco Caramel", 110.00),
+            ("4","Choco Strawberry", 120.00),
+            ("5","Traditional Matcha", 105.00),
+            ("5","Creamy Matcha", 120.00),
+            ("5","Matcha Strawberry", 120.00),
+            ("5","Choco Matcha", 120.00),
+    ]
+
+
+beverages = [
+    {"category": "0", "name": "Milo Malt", "price": 155.00, "size": "Medium", "available": True},
+    {"category": "0", "name": "White salted", "price": 155.00, "size": "Medium", "available": True},
+    {"category": "0", "name": "Caramel", "price": 145.00, "size": "Medium", "available": True},
+    {"category": "0", "name": "Mocha", "price": 145.00, "size": "Medium", "available": True},
+
+    {"category": "1", "name": "Classic Spanish", "price": 110.00, "size": "Medium", "available": True},
+    {"category": "1", "name": "Spanish cinnamon", "price": 115.00, "size": "Medium", "available": True},
+    {"category": "1", "name": "Spanish Mocha", "price": 115.00, "size": "Medium", "available": True},
+
+    {"category": "2", "name": "Classic Seasalt", "price": 115.00, "size": "Medium", "available": True},
+    {"category": "2", "name": "Seasalt Caramel", "price": 120.00, "size": "Medium", "available": True},
+    {"category": "2", "name": "Hazelnut Paline", "price": 120.00, "size": "Medium", "available": True},
+
+    {"category": "3", "name": "Black Irish", "price": 105.00, "size": "Medium", "available": True},
+    {"category": "3", "name": "Black Seasalt", "price": 110.00, "size": "Medium", "available": True},
+    {"category": "3", "name": "Black Vanilla Cream", "price": 110.00, "size": "Medium", "available": True},
+
+    {"category": "4", "name": "Choco Cinnamon", "price": 110.00, "size": "Medium", "available": True},
+    {"category": "4", "name": "Choco Caramel", "price": 110.00, "size": "Medium", "available": True},
+    {"category": "4", "name": "Choco Strawberry", "price": 120.00, "size": "Medium", "available": True},
+
+    {"category": "5", "name": "Traditional Matcha", "price": 105.00, "size": "Medium", "available": True},
+    {"category": "5", "name": "Creamy Matcha", "price": 120.00, "size": "Medium", "available": True},
+    {"category": "5", "name": "Matcha Strawberry", "price": 120.00, "size": "Medium", "available": True},
+    {"category": "5", "name": "Choco Matcha", "price": 120.00, "size": "Medium", "available": True},
+]
+
+
 #/ ================== Database Functions =================
 
 # Database connection function
@@ -30,12 +85,75 @@ def create_database():
             email TEXT NOT NULL
         )
     """)
-    print("Database and 'users' table created successfully.")
-
     conn.commit()
     conn.close()
 
-#create_database()
+
+def create_customer_orders_database():
+    """Initialize database connection and create orders table"""
+    conn = create_connection()
+    cursor = conn.cursor()
+    cursor.execute('''CREATE TABLE IF NOT EXISTS customer_orders
+                     (order_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                      customer_name TEXT,
+                      order_date TEXT,
+                      total_amount REAL,
+                      status TEXT)''')
+    print("Customer orders database initialized.")
+    conn.commit()
+    return conn
+
+
+def create_menu_item_database():
+    conn = create_connection()
+    cursor = conn.cursor()
+    cursor.execute('''CREATE TABLE IF NOT EXISTS menu_item
+                     (item_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                      item_name TEXT,
+                      status TEXT)''')
+    print("Menu item database initialized.")
+    conn.commit()
+    return conn
+
+
+def create_order_item_database():
+    conn = create_connection()
+    cursor = conn.cursor()
+    cursor.execute('''CREATE TABLE IF NOT EXISTS order_item
+                     (order_item_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                      order_id INTEGER,
+                      item_id INTEGER,
+                      size_id INTEGER,
+                      quantity INTEGER,
+                      unit_price REAL,
+                      subtotal REAL,
+                      FOREIGN KEY(order_id) REFERENCES customer_orders(order_id),
+                      FOREIGN KEY(item_id) REFERENCES menu_item(item_id),
+                      FOREIGN KEY(size_id) REFERENCES menu_size(size_id))''')
+    print("Order item database initialized.")
+    conn.commit()
+    return conn
+
+def create_menu_size_database():
+    conn = create_connection()
+    cursor = conn.cursor()
+    cursor.execute('''CREATE TABLE IF NOT EXISTS menu_size
+                     (size_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                      item_id INTEGER,
+                      size_label TEXT,
+                      price REAL,
+                      FOREIGN KEY(item_id) REFERENCES menu_item(item_id))''')
+    print("Menu size database initialized.")
+    conn.commit()
+    return conn
+
+
+#create_customer_orders_database()
+#create_menu_item_database()
+create_order_item_database()
+#create_menu_size_database()
+
+
 
 # Used to hash passwords for security purposes.
 def hash_password(password):
@@ -59,10 +177,17 @@ def add_user(username, password, role, email):
         return False  # username already exists
     finally:
         result = cursor.execute("SELECT * FROM users").fetchall()
-        print(result)
         conn.commit()
         conn.close()
 
+
+# Isang beses lang to irun tapos comment na or delete na para hindi maulit ulit ang pagdagdag ng same users.
+#create_database()
+#add_user("mico", "admin0001", "cashier", "mic0@gmail.com")
+#add_user("paul", "admin0002", "cashier", "pa6308191@gmail.com")
+#add_user("amiel", "admin0003", "admin", "amiel@gmail.com")
+#add_user("ivan", "admin0004", "admin", "ivan@gmail.com")
+#add_user("kyle", "admin0005", "admin", "kyle@gmail.com")
 
 # Used to delete users from the users table.
 def delete_user(): 
@@ -80,12 +205,7 @@ def delete_user():
     conn.commit()
     conn.close()
 
-#add_user("mico", "admin0001", "cashier", "mic0@gmail.com")
-#add_user("paul", "admin0002", "cashier", "pa6308191@gmail.com")
 
-#add_user("amiel", "admin0003", "admin")
-#add_user("ivan", "admin0004", "admin")
-#add_user("kyle", "admin0005", "admin")
 #delete_user()
 
 
@@ -126,7 +246,6 @@ root = ctk.CTk()
 root.withdraw()
 root.title("Kape'Bahay Ordering System")
 
-
 windows = {}
 
 
@@ -143,9 +262,9 @@ def lazy_create_window(name):
     elif name == "orders":
         w = create_orders_window(root)
     elif name == "management":
-        w = create_management_window(root)
+        w = create_management_window(root, beverages)
     elif name == "profile":
-        w = create_profile_window(root)
+        w = create_profile_window(root, role=current_user["role"])
     elif name == "sales":
         w = create_sales_report_window(root)
     else:
@@ -863,104 +982,603 @@ def create_cart_window(master):
 
 # Orders Window
 def create_orders_window(master):
-    orders_window = ctk.CTkToplevel(master)
-    orders_window.geometry("800x600")
-    orders_window.title("Kape'Bahay Ordering System - Orders")
-     # Further implementation of the orders window goes here.  
-    return orders_window
+    orders_win = ctk.CTkToplevel(master)
+    orders_win.geometry("1280x720")
+    orders_win.title("Kape'Bahay - Manage Orders")
+    orders_win.resizable(False, False)
+    orders_win.configure(fg_color="#43382F")
 
+    # Layout: full grid
+    orders_win.grid_columnconfigure(0, weight=1)
+    orders_win.grid_rowconfigure(1, weight=1)
+
+    # Header
+    header = ctk.CTkFrame(orders_win, fg_color="transparent")
+    header.grid(row=0, column=0, sticky="ew", padx=20, pady=(20,10))
+
+    ctk.CTkLabel(
+        header,
+        text="Orders Management",
+        font=("Segoe UI", 32, "bold"),
+        text_color="white"
+    ).pack(side="left", padx=10)
+
+    refresh_btn = ctk.CTkButton(
+        header,
+        text="🔄 Refresh",
+        width=140,
+        command=lambda: refresh_orders(content_area)
+    )
+    refresh_btn.pack(side="right", padx=10)
+
+    # Tab switch
+    tab_frame = ctk.CTkFrame(orders_win, fg_color="transparent")
+    tab_frame.grid(row=0, column=0, sticky="ew", pady=(80,0), padx=20)
+
+    current_tab = ctk.StringVar(value="pending")
+
+    pending_tab = ctk.CTkButton(
+        tab_frame,
+        text="Pending & Preparing",
+        fg_color="#1E6F43" if current_tab.get() == "pending" else "#555",
+        command=lambda: [current_tab.set("pending"), refresh_orders(content_area)]
+    )
+    pending_tab.pack(side="left", padx=5)
+
+    completed_tab = ctk.CTkButton(
+        tab_frame,
+        text="Completed",
+        fg_color="#1E6F43" if current_tab.get() == "completed" else "#555",
+        command=lambda: [current_tab.set("completed"), refresh_orders(content_area)]
+    )
+    completed_tab.pack(side="left", padx=5)
+
+    # Main scrollable content
+    content_area = ctk.CTkScrollableFrame(orders_win, fg_color="#2e241f")
+    content_area.grid(row=1, column=0, sticky="nsew", padx=20, pady=(10,20))
+
+    # Refresh function (now takes the parent frame)
+    def refresh_orders(parent):
+        # Clear old content
+        for widget in parent.winfo_children():
+            widget.destroy()
+
+        conn = create_connection()
+        cursor = conn.cursor()
+
+        if current_tab.get() == "pending":
+            cursor.execute("""
+                SELECT order_id, customer_name, order_date, total_amount, status
+                FROM customer_orders 
+                WHERE status IN ('Pending', 'Preparing')
+                ORDER BY order_date DESC
+            """)
+        else:
+            cursor.execute("""
+                SELECT order_id, customer_name, order_date, total_amount, status
+                FROM customer_orders 
+                WHERE status = 'Completed'
+                ORDER BY order_date DESC
+            """)
+
+        orders = cursor.fetchall()
+        conn.close()
+
+        if not orders:
+            ctk.CTkLabel(
+                parent,
+                text=f"No {current_tab.get().title()} orders at the moment ☕",
+                font=("Segoe UI", 20),
+                text_color="#aaa"
+            ).pack(expand=True, pady=120)
+            return
+
+        for order in orders:
+            oid, customer, date, total, status = order
+            card = ctk.CTkFrame(parent, fg_color="#4a3c30", corner_radius=12)
+            card.pack(fill="x", pady=10, padx=10, ipady=10)
+
+            top_row = ctk.CTkFrame(card, fg_color="transparent")
+            top_row.pack(fill="x", padx=15, pady=(10,5))
+
+            ctk.CTkLabel(top_row, text=f"Order #{oid}  •  {customer}",
+                         font=("Segoe UI", 16, "bold"),
+                         text_color="white").pack(side="left")
+
+            ctk.CTkLabel(top_row, text=f"₱{total:,.2f}",
+                         font=("Segoe UI", 16, "bold"),
+                         text_color="#ffca28").pack(side="right")
+
+            ctk.CTkLabel(card, text=f"{date} • {status}",
+                         text_color="#ccc").pack(anchor="w", padx=15, pady=4)
+
+            # Action buttons
+            btns = ctk.CTkFrame(card, fg_color="transparent")
+            btns.pack(fill="x", padx=15, pady=(8,12))
+
+            ctk.CTkButton(btns, text="View Details", width=120,
+                          command=lambda o=order: messagebox.showinfo("Details", f"Order #{o[0]}")).pack(side="left", padx=5)
+
+            if status == "Pending":
+                ctk.CTkButton(btns, text="Start Preparing", width=140,
+                              fg_color="#0288D1",
+                              command=lambda oid=oid: [start_preparing(oid), refresh_orders(parent)]).pack(side="left", padx=5)
+
+            if status in ("Pending", "Preparing"):
+                ctk.CTkButton(btns, text="Mark Completed", width=140,
+                              fg_color="#4caf50",
+                              command=lambda oid=oid: [complete_order(oid), refresh_orders(parent)]).pack(side="left", padx=5)
+
+    # Define your helper functions (simplified)
+    def start_preparing(order_id):
+        conn = create_connection()
+        cursor = conn.cursor()
+        cursor.execute("UPDATE customer_orders SET status = 'Preparing' WHERE order_id = ?", (order_id,))
+        conn.commit()
+        conn.close()
+        messagebox.showinfo("Started", "Order is now being prepared")
+
+    def complete_order(order_id):
+        conn = create_connection()
+        cursor = conn.cursor()
+        cursor.execute("UPDATE customer_orders SET status = 'Completed' WHERE order_id = ?", (order_id,))
+        conn.commit()
+        conn.close()
+        messagebox.showinfo("Done", "Order marked as completed")
+
+    # Initial load
+    refresh_orders(content_area)
+
+    return orders_win
 
 # Beverage management window
-def create_management_window(master):
-    settings_window = ctk.CTkToplevel(master)
-    settings_window.geometry("800x600")
-    settings_window.title("Kape'Bahay Ordering System - Settings")
-     # Further implementation of the settings window goes here.  
-    return settings_window
+def create_management_window(master, beverages):
+    management_window = ctk.CTkToplevel(master)
+    management_window.geometry("1280x720")
+    management_window.title("Kape'Bahay - Beverage Management")
+    management_window.configure(fg_color="#43382F")
+    management_window.resizable(False, False)
 
-def create_profile_window(master):
+    management_window.grid_columnconfigure(0, weight=7)
+    management_window.grid_columnconfigure(1, weight=3)
+    management_window.grid_rowconfigure(0, weight=0)   # header
+    management_window.grid_rowconfigure(1, weight=1)   # main content
+
+    # ── Header ───────────────────────────────────────────────────────
+    header = ctk.CTkFrame(management_window, fg_color="transparent")
+    header.grid(row=0, column=0, columnspan=2, sticky="ew", padx=20, pady=(15,10))
+
+    title = ctk.CTkLabel(
+        header,
+        text="Manage Beverages",
+        font=("Segoe UI", 36, "bold"),
+        text_color="#F2F1EF"
+    )
+    title.pack(side="left", padx=10)
+
+    # (You can add Refresh / Add New Beverage / Search here later)
+
+    # ── LEFT: Product Grid ───────────────────────────────────────────
+    left_container = ctk.CTkFrame(management_window, fg_color="#2C241C", corner_radius=12)
+    left_container.grid(row=1, column=0, padx=(20,10), pady=(0,20), sticky="nsew")
+
+    left_container.grid_columnconfigure(0, weight=1)
+    left_container.grid_rowconfigure(0, weight=0)   # filter row
+    left_container.grid_rowconfigure(1, weight=1)   # scrollable products
+
+    # Category filter
+    categories = [
+        "All",
+        "Milo / Chocolate Base",
+        "Spanish Series",
+        "Seasalt Series",
+        "Black Series",
+        "Choco Series",
+        "Matcha Series"
+    ]
+
+    filter_frame = ctk.CTkFrame(left_container, fg_color="transparent")
+    filter_frame.grid(row=0, column=0, sticky="ew", padx=15, pady=(15,10))
+
+    ctk.CTkLabel(
+        filter_frame,
+        text="Category:",
+        font=("Segoe UI", 16),
+        text_color="#D0C9B8"
+    ).pack(side="left", padx=(0,12))
+
+    category_var = ctk.StringVar(value="All")
+
+    combo = ctk.CTkComboBox(
+        filter_frame,
+        values=categories,
+        variable=category_var,
+        width=260,
+        height=38,
+        font=("Segoe UI", 14),
+        state="readonly"
+    )
+    combo.pack(side="left")
+
+    # Scrollable product area
+    products_frame = ctk.CTkScrollableFrame(
+        left_container,
+        fg_color="transparent",
+        corner_radius=0
+    )
+    products_frame.grid(row=1, column=0, sticky="nsew", padx=15, pady=(5,15))
+
+    products_frame.grid_columnconfigure((0,1,2), weight=1)
+
+    # ── RIGHT: Controls / Cart Preview / Actions ─────────────────────
+    right_panel = ctk.CTkFrame(management_window, fg_color="#3A2F24", corner_radius=12)
+    right_panel.grid(row=1, column=1, padx=(10,20), pady=(0,20), sticky="nsew")
+
+    right_panel.grid_columnconfigure(0, weight=1)
+    right_panel.grid_rowconfigure((0,1,2,3), weight=1, uniform="group1")
+
+    # Title
+    ctk.CTkLabel(
+        right_panel,
+        text="Management Tools",
+        font=("Segoe UI", 22, "bold"),
+        text_color="#F2F1EF"
+    ).pack(pady=(25,15))
+
+    # Placeholder buttons / sections (you can expand these later)
+    btn_style = {
+        "font": ("Segoe UI", 16),
+        "height": 50,
+        "corner_radius": 10
+    }
+
+    ctk.CTkButton(
+        right_panel,
+        text="Add New Beverage",
+        fg_color="#1E6F43",
+        hover_color="#14532D",
+        **btn_style,
+        command=lambda: messagebox.showinfo("Coming Soon", "Add beverage form goes here")
+    ).pack(pady=10, padx=25, fill="x")
+
+    ctk.CTkButton(
+        right_panel,
+        text="Edit Selected Item",
+        fg_color="#0288D1",
+        hover_color="#0277BD",
+        **btn_style,
+        state="disabled"   # will enable when selection implemented
+    ).pack(pady=10, padx=25, fill="x")
+
+    ctk.CTkButton(
+        right_panel,
+        text="Toggle Availability",
+        fg_color="#F57C00",
+        hover_color="#EF6C00",
+        **btn_style,
+        state="disabled"
+    ).pack(pady=10, padx=25, fill="x")
+
+    ctk.CTkButton(
+        right_panel,
+        text="Delete Beverage",
+        fg_color="#D32F2F",
+        hover_color="#C62828",
+        **btn_style,
+        state="disabled"
+    ).pack(pady=10, padx=25, fill="x")
+
+    # ── Product display logic ────────────────────────────────────────
+    def display_beverages(filter_cat="All"):
+        # Clear old cards
+        for child in products_frame.winfo_children():
+            child.destroy()
+
+        row, col = 0, 0
+
+        for bev in beverages:
+            cat_id = bev["category"]
+            name   = bev["name"]
+            price  = float(bev["price"])
+            avail  = bev["available"]
+
+            if filter_cat != "All" and cat_id != str(categories.index(filter_cat)):
+                continue
+
+            # Card
+            card = ctk.CTkFrame(
+                products_frame,
+                fg_color="#4A3C2F",
+                corner_radius=12,
+                border_width=1,
+                border_color="#5A4C3F"
+            )
+            card.grid(row=row, column=col, padx=12, pady=12, sticky="nsew")
+
+            # Status badge
+            status_color = "#2E7D32" if avail else "#C62828"
+            status_text  = "Available" if avail else "Unavailable"
+
+            badge = ctk.CTkLabel(
+                card,
+                text=status_text,
+                fg_color=status_color,
+                text_color="white",
+                width=90,
+                height=24,
+                corner_radius=12,
+                font=("Segoe UI", 11, "bold")
+            )
+            badge.pack(anchor="ne", padx=8, pady=8)
+
+            # Content
+            ctk.CTkLabel(
+                card,
+                text=name,
+                font=("Segoe UI", 15, "bold"),
+                text_color="#F5F0E8"
+            ).pack(pady=(10,4))
+
+            ctk.CTkLabel(
+                card,
+                text=f"₱ {price:,.2f}",
+                font=("Segoe UI", 16),
+                text_color="#FFCA28"
+            ).pack(pady=(0,12))
+
+            # Small action buttons
+            btn_frame = ctk.CTkFrame(card, fg_color="transparent")
+            btn_frame.pack(fill="x", pady=(0,10))
+
+            ctk.CTkButton(
+                btn_frame,
+                text="Edit",
+                width=70,
+                height=28,
+                font=("Segoe UI", 12),
+                fg_color="#0288D1",
+                hover_color="#0277BD"
+            ).pack(side="left", padx=6)
+
+            ctk.CTkButton(
+                btn_frame,
+                text="Toggle",
+                width=70,
+                height=28,
+                font=("Segoe UI", 12),
+                fg_color="#F57C00",
+                hover_color="#EF6C00"
+            ).pack(side="left", padx=6)
+
+            col += 1
+            if col > 2:
+                col = 0
+                row += 1
+
+    # Initial display
+    display_beverages()
+
+    # Bind category change
+    def on_category_change(*args):
+        cat_text = category_var.get()
+        if cat_text == "All":
+            display_beverages("All")
+        else:
+            display_beverages(cat_text)
+
+    category_var.trace("w", on_category_change)
+
+
+    return management_window
+
+
+def create_profile_window(master, role="Cashier"):
+    BG_DARK = "#505050"      
+    BOX_BROWN = "#966240"    
+    BTN_CLAY = "#63442d"     
+    LOGOUT_ORANGE = "#b84a00" 
+    TEXT_WHITE = "#ffffff"
+
     profile_window = ctk.CTkToplevel(master)
-    profile_window.geometry("1020x730")
-    profile_window.title("Kape'Bahay - Barista Profile")
+    profile_window.geometry("1280x720")
+    profile_window.title(f"Kape'Bahay - {role.capitalize()} POV")
     profile_window.resizable(False, False)
-    profile_window.configure(fg_color="#120f0d")
+    profile_window.configure(fg_color=BG_DARK)
 
-    sales_var = ctk.DoubleVar(value=500.00)
-    orders_var = ctk.IntVar(value=42)
+    header = ctk.CTkFrame(profile_window, fg_color=BOX_BROWN, corner_radius=20, width=320, height=85)
+    header.place(x=60, y=40)
 
+    profile_window.name_label = ctk.CTkLabel(header, text="IVAN", font=("Arial", 44, "bold"), text_color=TEXT_WHITE)
+    profile_window.name_label.place(x=20, y=10)
     
-    name_label = ctk.CTkLabel(profile_window, text="---", 
-                              font=("Segoe UI", 54, "bold"), text_color="white")
-    name_label.grid(row=0, column=0, padx=(50, 0), pady=(40, 40), sticky="w")
-    
-    role_badge = ctk.CTkLabel(profile_window, text="---", fg_color="#c8b591", text_color="black", 
-                              corner_radius=15, font=("Segoe UI", 16, "bold"), width=110, height=35)
-    role_badge.grid(row=0, column=1, padx=(10, 720), pady=(25, 20), sticky="w")
+    badge_color = "#b5b5b5" if role.lower() == "admin" else "#d1d1d1"
 
-    
-    profile_window.name_label = name_label
-    profile_window.role_badge = role_badge
+    profile_window.role_badge = ctk.CTkLabel(header, text=role.capitalize(), fg_color=badge_color, text_color="black", 
+                              corner_radius=15, font=("Arial", 14, "bold"), width=80, height=28)
+    profile_window.role_badge.place(x=160, y=28)
 
+    logout_btn = ctk.CTkButton(profile_window, text="LOG OUT", font=("Arial", 16, "bold"), 
+                               fg_color=LOGOUT_ORANGE, hover_color="#8e3900", corner_radius=20,
+                               width=120, height=50,
+                               command=lambda: show_window("login"))
+    logout_btn.place(x=1050, y=65)
 
-    main_box = ctk.CTkFrame(profile_window, fg_color="#6f5e4c", corner_radius=20, width=960, height=540)
-    main_box.grid(row=1, column=0, columnspan=2, padx=30, pady=(0), sticky="nsew")
-    main_box.grid_propagate(False)
+    main_box = ctk.CTkFrame(profile_window, fg_color=BOX_BROWN, corner_radius=30, width=1160, height=520)
+    main_box.place(relx=0.5, rely=0.6, anchor="center")
 
-    v_divider = ctk.CTkFrame(main_box, width=2, height=380, fg_color="#9e8d7a")
-    v_divider.place(x=450, y=0)
+    v_divider = ctk.CTkFrame(main_box, width=2, height=480, fg_color="#b88a6d")
+    v_divider.place(x=540, y=20)
 
-    h_divider = ctk.CTkFrame(main_box, width=1160, height=2, fg_color="#9e8d7a")
-    h_divider.place(x=0, y=380)
+    shift_title = ctk.CTkLabel(main_box, text="My Shift", font=("Arial", 28, "bold"), text_color=TEXT_WHITE)
+    shift_title.place(x=40, y=20)
 
-    shift_title = ctk.CTkLabel(main_box, text="My Shift", font=("Segoe UI", 30, "bold"), text_color="white")
-    shift_title.place(x=40, y=30)
+    stats_font = ("Arial", 18)
+    ctk.CTkLabel(main_box, text="Status:", font=stats_font).place(x=60, y=85)
+    ctk.CTkLabel(main_box, text="On Shift     +", fg_color=BTN_CLAY, width=180, height=40, corner_radius=20).place(x=165, y=85)
 
-    status_label = ctk.CTkLabel(main_box, text="Status:", font=("Segoe UI", 24), text_color="white")
-    status_label.place(x=40, y=100)
-    
-    status_menu = ctk.CTkOptionMenu(main_box, values=["On Shift", "Off Shift"], 
-                                     fg_color="#4a3f35", button_color="#4a3f35", 
-                                     width=160, height=40, font=("Segoe UI", 18))
-    status_menu.place(x=130, y=100)
+    ctk.CTkLabel(main_box, text="Total Sales:", font=stats_font).place(x=60, y=145)
+    ctk.CTkLabel(main_box, text="PHP       999.99", fg_color=BTN_CLAY, width=180, height=40, corner_radius=20).place(x=165, y=145)
 
-    sales_display = ctk.CTkLabel(main_box, text=f"Total Sales: PHP {sales_var.get():.2f}", 
-                                  font=("Segoe UI", 24), text_color="white")
-    sales_display.place(x=40, y=180)
+    ctk.CTkLabel(main_box, text="Total Orders Made:", font=stats_font).place(x=60, y=205)
+    ctk.CTkLabel(main_box, text="999", fg_color=BTN_CLAY, width=130, height=40, corner_radius=20).place(x=225, y=205)
 
-    orders_display = ctk.CTkLabel(main_box, text=f"Total Orders: {orders_var.get()}", 
-                                   font=("Segoe UI", 24), text_color="white")
-    orders_display.place(x=40, y=260)
+    ctk.CTkFrame(main_box, width=500, height=2, fg_color="#b88a6d").place(x=20, y=270)
 
-    order_button = ctk.CTkButton(main_box, text="Create Order", font=("Segoe UI", 32, "bold"), 
-                                 fg_color="#e59a6d", hover_color="#c98359", 
-                                 width=400, height=120, corner_radius=25,
-                                 command=lambda: show_window("cart"))
-    order_button.place(x=505, y=50)
-    
+    # --- THE RESPONSIVE UPDATE USER BUTTON ---
+    update_user_btn = ctk.CTkButton(main_box, text="UPDATE USER", font=("Arial", 18, "bold"), 
+                                    fg_color=BTN_CLAY, hover_color="#4d3523", corner_radius=35,
+                                    width=450, height=90, 
+                                    command=lambda: open_update_user_window(profile_window)) # Attached to new function
+    update_user_btn.place(x=45, y=340)
 
-    logout_button = ctk.CTkButton(main_box, text="LOGOUT", font=("Segoe UI", 32, "bold"), 
-                                  fg_color="#513626", hover_color="#3d291d", 
-                                  width=400, height=120, corner_radius=25, 
-                                  command=lambda: show_window("login"))
-    logout_button.place(x=505, y=200)
+    btn_style = {"font": ("Arial", 18, "bold"), "fg_color": BTN_CLAY, "hover_color": "#4d3523", "width": 520, "height": 90, "corner_radius": 35}
 
-    # ================= Notifications Section with Scrollable Frame =================
-    notif_title = ctk.CTkLabel(main_box, text="Notifications:", font=("Segoe UI", 22, "bold"), text_color="white")
-    notif_title.place(x=35, y=390)
+    if role.lower() == "admin":
+        buttons =["CREATE ORDER", "VIEW PENDING ORDERS", "VIEW SALES REPORT", "BEVERAGE MANAGEMENT"]
+    else:
+        buttons =["CREATE ORDER", "VIEW SALES REPORT", "VIEW SALES REPORT"]
 
-    notif_frame = ctk.CTkScrollableFrame(main_box, 
-                                         width=870, 
-                                         height=40, 
-                                         fg_color="transparent", 
-                                         scrollbar_button_color="#6f5e4c", 
-                                         scrollbar_button_hover_color="#6f5e4c")
-    notif_frame.place(x=35, y=425)
+    # Assign functionality strictly to the buttons
+    for i, btn_text in enumerate(buttons):
+        y_pos = 35 + (i * 115) if role.lower() == "admin" else 60 + (i * 135)
 
-    stock_alert = ctk.CTkLabel(notif_frame, text="• Low Stock: Whole Milk (2 Boxes remaining)", 
-                               font=("Segoe UI", 18), text_color="#ffd7ba", anchor="w")
-    stock_alert.pack(fill="x", pady=2)
+        # Decide which window to open based on the button name
+        if btn_text == "CREATE ORDER":
+            cmd = lambda: show_window("cart")
+        elif btn_text == "VIEW PENDING ORDERS":
+            cmd = lambda: show_window("orders")
+        elif btn_text == "VIEW SALES REPORT":
+            cmd = lambda: show_window("sales")
+        elif btn_text == "BEVERAGE MANAGEMENT":
+            cmd = lambda: show_window("management")
+        else:
+            cmd = None
+            
+        ctk.CTkButton(main_box, text=btn_text, command=cmd, **btn_style).place(x=580, y=y_pos)
 
+    profile_window.protocol("WM_DELETE_WINDOW", lambda: master.destroy())
     return profile_window
+
+
+def open_update_user_window(master):
+    # Match existing color palette
+    BG_DARK = "#505050"      
+    BOX_BROWN = "#966240"    
+    BTN_CLAY = "#63442d"     
+    TEXT_WHITE = "#ffffff"
+    LOGOUT_ORANGE = "#b84a00" 
+
+    # Create the top-level window (Pop-up)
+    update_win = ctk.CTkToplevel(master)
+    update_win.geometry("450x550")
+    update_win.title("Update User Information")
+    update_win.resizable(False, False)
+    update_win.configure(fg_color=BG_DARK)
+    
+    # Keep this window on top and grab focus (Modal)
+    update_win.transient(master)
+    update_win.grab_set()
+
+    # Container to hold the form
+    container = ctk.CTkFrame(update_win, fg_color=BOX_BROWN, corner_radius=20, width=370, height=470)
+    container.place(relx=0.5, rely=0.5, anchor="center")
+
+    # Title
+    title_label = ctk.CTkLabel(container, text="Edit Profile", font=("Arial", 28, "bold"), text_color=TEXT_WHITE)
+    title_label.place(relx=0.5, y=40, anchor="n")
+
+    # Entry Styling
+    label_font = ("Arial", 16)
+    entry_style = {"width": 290, "height": 40, "corner_radius": 10, "fg_color": "#e0e0e0", "text_color": "black"}
+
+    # 1. Username
+    ctk.CTkLabel(container, text="New Username:", font=label_font, text_color=TEXT_WHITE).place(x=40, y=95)
+    username_entry = ctk.CTkEntry(container, placeholder_text="Enter new username", **entry_style)
+    username_entry.place(x=40, y=125)
+
+    # 2. Password
+    ctk.CTkLabel(container, text="New Password:", font=label_font, text_color=TEXT_WHITE).place(x=40, y=180)
+    password_entry = ctk.CTkEntry(container, placeholder_text="Enter new password", show="*", **entry_style)
+    password_entry.place(x=40, y=210)
+
+    # 3. Email Address
+    ctk.CTkLabel(container, text="New Email Address:", font=label_font, text_color=TEXT_WHITE).place(x=40, y=265)
+    email_entry = ctk.CTkEntry(container, placeholder_text="Enter new email", **entry_style)
+    email_entry.place(x=40, y=295)
+
+    # Fetch current user data to pre-fill the form
+    current_usr = current_user.get("username")
+    current_email = ""
+    if current_usr:
+        try:
+            conn = create_connection()
+            cursor = conn.cursor()
+            cursor.execute("SELECT email FROM users WHERE username=?", (current_usr,))
+            row = cursor.fetchone()
+            if row:
+                current_email = row[0]
+            conn.close()
+            
+            # Pre-fill the entries
+            username_entry.insert(0, current_usr)
+            email_entry.insert(0, current_email)
+        except sqlite3.Error:
+            pass
+
+    # Save Functionality
+    def save_changes():
+        new_username = username_entry.get().strip()
+        new_password = password_entry.get()
+        new_email = email_entry.get().strip()
+        
+        # Check if fields are filled
+        if not new_username or not new_password or not new_email:
+            messagebox.showwarning("Input Error", "All fields are required to update your profile.")
+            return
+            
+        hashed_pw = hash_password(new_password)
+        old_username = current_user["username"]
+
+        try:
+            conn = create_connection()
+            cursor = conn.cursor()
+            
+            # Update the existing user in the database
+            cursor.execute("""
+                UPDATE users 
+                SET username = ?, password = ?, email = ?
+                WHERE username = ?
+            """, (new_username, hashed_pw, new_email, old_username))
+            
+            conn.commit()
+            conn.close()
+            
+            messagebox.showinfo("Success", "Account updated successfully!")
+            
+            # Update global state so the program knows your new username
+            current_user["username"] = new_username
+            
+            # Close the update window and refresh the profile window to show the updated name
+            update_win.destroy()
+            show_window("profile")
+            
+        except sqlite3.IntegrityError:
+            messagebox.showerror("Error", "This username is already taken. Please choose another.")
+        except sqlite3.Error as e:
+            messagebox.showerror("Database Error", f"An error occurred: {e}")
+
+    # Save Button
+    save_btn = ctk.CTkButton(container, text="SAVE CHANGES", font=("Arial", 16, "bold"), 
+                             fg_color=BTN_CLAY, hover_color="#4d3523", corner_radius=20, 
+                             width=290, height=45, command=save_changes)
+    save_btn.place(x=40, y=360)
+
+    # Cancel Button
+    cancel_btn = ctk.CTkButton(container, text="CANCEL", font=("Arial", 16, "bold"), 
+                               fg_color=LOGOUT_ORANGE, hover_color="#8e3900", corner_radius=20, 
+                               width=290, height=45, command=update_win.destroy)
+    cancel_btn.place(x=40, y=415)
+
 
 def create_sales_report_window(master):
     report_window = ctk.CTkToplevel(master)
