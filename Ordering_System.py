@@ -150,7 +150,7 @@ def create_menu_size_database():
 
 #create_customer_orders_database()
 #create_menu_item_database()
-create_order_item_database()
+#create_order_item_database()
 #create_menu_size_database()
 
 
