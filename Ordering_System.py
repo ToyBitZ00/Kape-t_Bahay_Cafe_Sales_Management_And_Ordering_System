@@ -1,10 +1,13 @@
 import customtkinter as ctk
-from tkinter import messagebox
+from tkinter import messagebox, filedialog
 from PIL import Image, ImageTk
 import hashlib
 import sqlite3
 import re
 from datetime import datetime
+import os
+import shutil
+
 
 current_user = {
     "username": None,
@@ -66,7 +69,7 @@ beverages = [
 
 #/ ================== Database Functions =================
 
-# Database connection function
+
 def create_connection():
     conn = sqlite3.connect("kape't_bahay_database.db")
     return conn
@@ -147,7 +150,7 @@ def create_menu_size_database():
     conn.commit()
     return conn
 
-
+#create_database()
 #create_customer_orders_database()
 #create_menu_item_database()
 #create_order_item_database()
@@ -181,8 +184,7 @@ def add_user(username, password, role, email):
         conn.close()
 
 
-# Isang beses lang to irun tapos comment na or delete na para hindi maulit ulit ang pagdagdag ng same users.
-#create_database()
+# Isang beses lang to irun tapos comment na or delete na para hindi maulit ulit dagdag ng users.
 #add_user("mico", "admin0001", "cashier", "mic0@gmail.com")
 #add_user("paul", "admin0002", "cashier", "pa6308191@gmail.com")
 #add_user("amiel", "admin0003", "admin", "amiel@gmail.com")
@@ -239,6 +241,179 @@ def verify_signup(username, password, repeat_password, email):
     conn.close()
 
 
+def create_employee_performance_database():
+    conn = create_connection()
+    cursor = conn.cursor()
+    cursor.execute('''CREATE TABLE IF NOT EXISTS employee_performance
+                     (employee_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                      username TEXT,
+                      total_sales REAL,
+                      orders_made INTEGER,
+                      FOREIGN KEY(username) REFERENCES users(username))''')
+    print("Employee performance database initialized.")
+    conn.commit()
+    return conn
+
+#create_employee_performance_database()
+
+
+
+# Management Window Database Queries
+
+
+def fetch_menu_items():
+    conn = create_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT mi.item_id, mi.item_name, mi.status,
+               ms.size_id, ms.size_label, ms.price
+        FROM menu_item mi
+        JOIN menu_size ms ON mi.item_id = ms.item_id
+        ORDER BY mi.item_name
+    """)
+
+    data = cursor.fetchall()
+    conn.close()
+    return data
+
+
+def add_menu_item(name, size, price):
+    conn = create_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("INSERT INTO menu_item (item_name, status) VALUES (?, 1)", (name,))
+    item_id = cursor.lastrowid
+
+    cursor.execute(
+        "INSERT INTO menu_size (item_id, size_label, price) VALUES (?, ?, ?)",
+        (item_id, size, price)
+    )
+
+    conn.commit()
+    conn.close()
+
+
+def delete_menu_item(item_id):
+    conn = create_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("DELETE FROM menu_size WHERE item_id=?", (item_id,))
+    cursor.execute("DELETE FROM menu_item WHERE item_id=?", (item_id,))
+
+    conn.commit()
+    conn.close()
+
+
+def toggle_menu_item(item_id, current_status):
+    conn = create_connection()
+    cursor = conn.cursor()
+
+    new_status = 0 if current_status == 1 else 1
+
+    cursor.execute(
+        "UPDATE menu_item SET status=? WHERE item_id=?",
+        (new_status, item_id)
+    )
+
+    conn.commit()
+    conn.close()
+
+    return new_status
+
+
+def update_menu_item(item_id, name, size_id, size, price):
+    conn = create_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("UPDATE menu_item SET item_name=? WHERE item_id=?", (name, item_id))
+    cursor.execute("UPDATE menu_size SET size_label=?, price=? WHERE size_id=?",
+                   (size, price, size_id))
+
+    conn.commit()
+    conn.close()
+
+
+def update_menu_item_status(item_id, new_status):
+    conn = create_connection()
+    cursor = conn.cursor()
+
+    cursor.execute(
+        "UPDATE menu_item SET status=? WHERE item_id=?",
+        (new_status, item_id)
+    )
+
+    conn.commit()
+    conn.close()
+
+
+# ================= IMAGE =================
+IMAGE_FOLDER = "assets/images"
+ICONS_FOLDER = "assets/icons"
+os.makedirs(IMAGE_FOLDER, exist_ok=True)
+
+
+def get_image_path(item_name):
+    return os.path.join(IMAGE_FOLDER, f"{item_name}.png")
+
+
+def load_image_file(filename, size=(200, 200)):
+    path = os.path.join(IMAGE_FOLDER, filename)
+
+    if not os.path.exists(path):
+        print(f"Image not found: {path}")
+        return None
+
+    try:
+        img = Image.open(path)
+        img.thumbnail(size)
+        return ctk.CTkImage(img, size=size)
+    except Exception as e:
+        print("Error loading image:", e)
+        return None
+    
+    
+def load_ctk_image(item_name, size=(200, 200)):
+    path = get_image_path(item_name)
+
+    if not os.path.exists(path):
+        return None
+
+    try:
+        img = Image.open(path)
+        img.thumbnail(size)  # prevents stretching
+        return ctk.CTkImage(img, size=size)
+    except:
+        return None
+
+
+def save_image(file_path, item_name):
+    if not file_path:
+        return
+
+    destination = os.path.join(IMAGE_FOLDER, f"{item_name}.png")
+    shutil.copy(file_path, destination)
+
+
+def load_image(name, size=(220, 200)):
+    for ext in ["png", "jpg", "jpeg"]:
+        path = os.path.join(IMAGE_FOLDER, f"{name}.{ext}")
+        if os.path.exists(path):
+            img = Image.open(path).convert("RGBA")
+            img = img.resize(size, Image.LANCZOS)  # Force exact size
+            return ctk.CTkImage(img, size=size)
+    return None
+
+def load_icon(name, size=(60,30)):
+    for ext in ["png", "jpg", "jpeg"]:
+        path = os.path.join(ICONS_FOLDER, f"{name}.{ext}")
+        if os.path.exists(path):
+            img = Image.open(path)
+            img.thumbnail(size)
+            return ctk.CTkImage(img, size=size)
+    return None
+
+
 #/ =================== GUI Functions =====================
 
 
@@ -262,7 +437,7 @@ def lazy_create_window(name):
     elif name == "orders":
         w = create_orders_window(root)
     elif name == "management":
-        w = create_management_window(root, beverages)
+        w = create_management_window(root)
     elif name == "profile":
         w = create_profile_window(root, role=current_user["role"])
     elif name == "sales":
@@ -339,15 +514,18 @@ def create_login_window(master):
     leftframe.grid(row=0, column=0, sticky="news")
     leftframe.grid_propagate(False)
 
-    businessLogoImage = ctk.CTkImage(Image.open("kape't_bahay_logo.png"), size=(400, 400))
-    businessLogo = ctk.CTkLabel(leftframe, 
-                                text="",
-                                font=("Segoe UI", 20, "bold"),
-                                text_color="#FFFFFF",
-                                width=400,
-                                height=400,
-                                fg_color="transparent",
-                                image=businessLogoImage)
+    logo_img = load_image_file("kape't_bahay_logo.png", size=(400, 400))
+
+    businessLogo = ctk.CTkLabel(
+    leftframe,
+    text="",
+    width=400,
+    height=400,
+    fg_color="transparent",
+    image=logo_img
+)
+
+    businessLogo.image = logo_img  # VERY IMPORTANT
     businessLogo.pack(padx=(80,0), pady=(80,0), anchor="center")
     
     
@@ -1132,244 +1310,315 @@ def create_orders_window(master):
     return orders_win
 
 # Beverage management window
-def create_management_window(master, beverages):
-    management_window = ctk.CTkToplevel(master)
-    management_window.geometry("1280x720")
-    management_window.title("Kape'Bahay - Beverage Management")
-    management_window.configure(fg_color="#43382F")
-    management_window.resizable(False, False)
+def create_management_window(master):
+    win = ctk.CTkToplevel(master)
+    win.geometry("1380x920")
+    win.title("Management")
+    win.configure(fg_color="#43382F")
+    win.resizable(False, False)
 
-    management_window.grid_columnconfigure(0, weight=7)
-    management_window.grid_columnconfigure(1, weight=3)
-    management_window.grid_rowconfigure(0, weight=0)   # header
-    management_window.grid_rowconfigure(1, weight=1)   # main content
+    win.grid_columnconfigure(0, weight=9) 
+    win.grid_columnconfigure(1, weight=3)
+    win.grid_rowconfigure(1, weight=1)
 
-    # ── Header ───────────────────────────────────────────────────────
-    header = ctk.CTkFrame(management_window, fg_color="transparent")
-    header.grid(row=0, column=0, columnspan=2, sticky="ew", padx=20, pady=(15,10))
+    # HEADER
+    header = ctk.CTkLabel(win, text="Manage Beverages",
+                          font=("Segoe UI", 36, "bold"),
+                          text_color="white")
+    header.grid(row=0, column=0, padx=20, pady=10, sticky="w")
 
-    title = ctk.CTkLabel(
-        header,
-        text="Manage Beverages",
-        font=("Segoe UI", 36, "bold"),
-        text_color="#F2F1EF"
-    )
-    title.pack(side="left", padx=10)
+    # LEFT PANEL
+    left = ctk.CTkScrollableFrame(win, fg_color="#2C241C")
+    left.grid(row=1, column=0, padx=(20, 0), pady=20, sticky="nsew")
+    for i in range(3):
+        left.grid_columnconfigure(i, weight=1, uniform="col")
+    
 
-    # (You can add Refresh / Add New Beverage / Search here later)
+    # RIGHT PANEL
+    right = ctk.CTkFrame(win, fg_color="#3A2F24")
+    right.grid(row=1, column=1, padx=20, pady=20, sticky="nsew")
 
-    # ── LEFT: Product Grid ───────────────────────────────────────────
-    left_container = ctk.CTkFrame(management_window, fg_color="#2C241C", corner_radius=12)
-    left_container.grid(row=1, column=0, padx=(20,10), pady=(0,20), sticky="nsew")
+    # ================= REFRESH =================
+    def refresh_products():
+        for widget in left.winfo_children():
+            widget.destroy()
 
-    left_container.grid_columnconfigure(0, weight=1)
-    left_container.grid_rowconfigure(0, weight=0)   # filter row
-    left_container.grid_rowconfigure(1, weight=1)   # scrollable products
+        data = fetch_menu_items()
 
-    # Category filter
-    categories = [
-        "All",
-        "Milo / Chocolate Base",
-        "Spanish Series",
-        "Seasalt Series",
-        "Black Series",
-        "Choco Series",
-        "Matcha Series"
-    ]
+        row = 0
+        col = 0
 
-    filter_frame = ctk.CTkFrame(left_container, fg_color="transparent")
-    filter_frame.grid(row=0, column=0, sticky="ew", padx=15, pady=(15,10))
 
-    ctk.CTkLabel(
-        filter_frame,
-        text="Category:",
-        font=("Segoe UI", 16),
-        text_color="#D0C9B8"
-    ).pack(side="left", padx=(0,12))
+        for item_id, name, status, size_id, size, price in data:
+            status = int(status)
+            card = ctk.CTkFrame(left, fg_color="#4A3C2F", corner_radius=6, width=300, height=370)
+            card.grid(row=row, column=col, padx=10, pady=10, sticky="w")
+            card.grid_propagate(False)
+            card.grid_columnconfigure(0, weight=1)
+            card.grid_columnconfigure(1, weight=1)
 
-    category_var = ctk.StringVar(value="All")
+            # IMAGE
+            img = load_image(name, size=(220, 200))
+            if img:
+                img_label = ctk.CTkLabel(card, image=img, text="")
+                img_label.image = img
+                img_label.grid(row=0, column=0, columnspan=2, padx=10, pady=(20, 5), sticky="n")
+            else:
+                # Placeholder so cards without images stay same height
+                placeholder = ctk.CTkLabel(card, text="", width=220, height=200)
+                placeholder.grid(row=0, column=0, columnspan=2, padx=10, pady=(20, 5), sticky="n")
 
-    combo = ctk.CTkComboBox(
-        filter_frame,
-        values=categories,
-        variable=category_var,
-        width=260,
-        height=38,
-        font=("Segoe UI", 14),
-        state="readonly"
-    )
-    combo.pack(side="left")
+            # NAME
+            item_name = ctk.CTkLabel(card, text=name,
+                         font=("Segoe UI", 16, "bold"),
+                         text_color="white")
+            item_name.grid(row=1, column=0, sticky="w", padx=(10, 10), pady=(5, 10))
 
-    # Scrollable product area
-    products_frame = ctk.CTkScrollableFrame(
-        left_container,
-        fg_color="transparent",
-        corner_radius=0
-    )
-    products_frame.grid(row=1, column=0, sticky="nsew", padx=15, pady=(5,15))
+            # SIZE + PRICE
+            size_price = ctk.CTkLabel(card, 
+                         text=f"{size} - ₱{price}",
+                         font=("Segoe UI", 14),
+                         text_color="#D0C9B8")
+            size_price.grid(row=1, column=1, sticky="e", padx=(0, 10), pady=(0, 0))
 
-    products_frame.grid_columnconfigure((0,1,2), weight=1)
 
-    # ── RIGHT: Controls / Cart Preview / Actions ─────────────────────
-    right_panel = ctk.CTkFrame(management_window, fg_color="#3A2F24", corner_radius=12)
-    right_panel.grid(row=1, column=1, padx=(10,20), pady=(0,20), sticky="nsew")
+            
+            edit_button = ctk.CTkButton(card, text="Edit",
+                          width=80,
+                          height=40,
+                          command=lambda i=item_id, n=name, sid=size_id, s=size, p=price:
+                          open_edit_form(i, n, sid, s, p)
+                          )
+            edit_button.grid(row=2, column=0, padx=(10, 0), pady=(0, 0),sticky="w")
+            
+            delete_button = ctk.CTkButton(card, text="Delete",
+                          width=80,
+                          height=40,
+                          fg_color="#C62828",
+                          command=lambda i=item_id:
+                          [delete_menu_item(i), refresh_products()]
+                          )
+            delete_button.grid(row=3, column=0, padx=(10, 0), pady=(10, 10), sticky="w")
+            
 
-    right_panel.grid_columnconfigure(0, weight=1)
-    right_panel.grid_rowconfigure((0,1,2,3), weight=1, uniform="group1")
+            # ================= TOGGLE BUTTON =================
 
-    # Title
-    ctk.CTkLabel(
-        right_panel,
-        text="Management Tools",
-        font=("Segoe UI", 22, "bold"),
-        text_color="#F2F1EF"
-    ).pack(pady=(25,15))
+            toggle_on_img = load_icon("toggle_on")
+            toggle_off_img = load_icon("toggle_off")
 
-    # Placeholder buttons / sections (you can expand these later)
-    btn_style = {
-        "font": ("Segoe UI", 16),
-        "height": 50,
-        "corner_radius": 10
-    }
+            # Use mutable container so closure is safe
+            state = {"is_on": True if status == 1 else False}
 
-    ctk.CTkButton(
-        right_panel,
-        text="Add New Beverage",
-        fg_color="#1E6F43",
-        hover_color="#14532D",
-        **btn_style,
-        command=lambda: messagebox.showinfo("Coming Soon", "Add beverage form goes here")
-    ).pack(pady=10, padx=25, fill="x")
+            # STATUS LABEL
+            status_label = ctk.CTkLabel(card,
+                                        text="Available" if status == 1 else "Unavailable",
+                                        fg_color="#2E7D32" if status == 1 else "#C62828",
+                                        font=("Segoe UI", 14, "bold"),
+                                        width=120,
+                                        height=40,
+                                        corner_radius=6
+                                    )
+            status_label.grid(row=2, column=1, padx=(12, 10), pady=(0, 0), sticky="e")
 
-    ctk.CTkButton(
-        right_panel,
-        text="Edit Selected Item",
-        fg_color="#0288D1",
-        hover_color="#0277BD",
-        **btn_style,
-        state="disabled"   # will enable when selection implemented
-    ).pack(pady=10, padx=25, fill="x")
 
-    ctk.CTkButton(
-        right_panel,
-        text="Toggle Availability",
-        fg_color="#F57C00",
-        hover_color="#EF6C00",
-        **btn_style,
-        state="disabled"
-    ).pack(pady=10, padx=25, fill="x")
+            def toggle_button_function(pid, btn, lbl, current_status, on_img, off_img):
+                new_status = toggle_menu_item(pid, current_status)
 
-    ctk.CTkButton(
-        right_panel,
-        text="Delete Beverage",
-        fg_color="#D32F2F",
-        hover_color="#C62828",
-        **btn_style,
-        state="disabled"
-    ).pack(pady=10, padx=25, fill="x")
+                if new_status == 1:
+                    btn.configure(image=on_img)
+                    lbl.configure(text="Available", fg_color="#2E7D32")
+                else:
+                    btn.configure(image=off_img)
+                    lbl.configure(text="Unavailable", fg_color="#C62828")
 
-    # ── Product display logic ────────────────────────────────────────
-    def display_beverages(filter_cat="All"):
-        # Clear old cards
-        for child in products_frame.winfo_children():
-            child.destroy()
+                # Rebind with updated status
+                btn.configure(
+                    command=lambda: toggle_button_function(pid, btn, lbl, new_status, on_img, off_img)
+                )
 
-        row, col = 0, 0
 
-        for bev in beverages:
-            cat_id = bev["category"]
-            name   = bev["name"]
-            price  = float(bev["price"])
-            avail  = bev["available"]
+            toggle_btn = ctk.CTkButton(card,
+                                        text="",
+                                        image=toggle_on_img if status == 1 else toggle_off_img,
+                                        fg_color="transparent",
+                                        width=60,
+                                        height=40
+                                    )
+            toggle_btn.grid(row=3, column=1, padx=(12, 10), pady=(10, 10), sticky="e")
 
-            if filter_cat != "All" and cat_id != str(categories.index(filter_cat)):
-                continue
 
-            # Card
-            card = ctk.CTkFrame(
-                products_frame,
-                fg_color="#4A3C2F",
-                corner_radius=12,
-                border_width=1,
-                border_color="#5A4C3F"
-            )
-            card.grid(row=row, column=col, padx=12, pady=12, sticky="nsew")
+            # Bind correct values
+            toggle_btn.configure(command=lambda pid=item_id, btn=toggle_btn, lbl=status_label, s=status,
+                                 on=toggle_on_img, off=toggle_off_img:
+                                 toggle_button_function(pid, btn, lbl, s, on, off))
 
-            # Status badge
-            status_color = "#2E7D32" if avail else "#C62828"
-            status_text  = "Available" if avail else "Unavailable"
-
-            badge = ctk.CTkLabel(
-                card,
-                text=status_text,
-                fg_color=status_color,
-                text_color="white",
-                width=90,
-                height=24,
-                corner_radius=12,
-                font=("Segoe UI", 11, "bold")
-            )
-            badge.pack(anchor="ne", padx=8, pady=8)
-
-            # Content
-            ctk.CTkLabel(
-                card,
-                text=name,
-                font=("Segoe UI", 15, "bold"),
-                text_color="#F5F0E8"
-            ).pack(pady=(10,4))
-
-            ctk.CTkLabel(
-                card,
-                text=f"₱ {price:,.2f}",
-                font=("Segoe UI", 16),
-                text_color="#FFCA28"
-            ).pack(pady=(0,12))
-
-            # Small action buttons
-            btn_frame = ctk.CTkFrame(card, fg_color="transparent")
-            btn_frame.pack(fill="x", pady=(0,10))
-
-            ctk.CTkButton(
-                btn_frame,
-                text="Edit",
-                width=70,
-                height=28,
-                font=("Segoe UI", 12),
-                fg_color="#0288D1",
-                hover_color="#0277BD"
-            ).pack(side="left", padx=6)
-
-            ctk.CTkButton(
-                btn_frame,
-                text="Toggle",
-                width=70,
-                height=28,
-                font=("Segoe UI", 12),
-                fg_color="#F57C00",
-                hover_color="#EF6C00"
-            ).pack(side="left", padx=6)
 
             col += 1
-            if col > 2:
+            if col == 3:
                 col = 0
                 row += 1
 
-    # Initial display
-    display_beverages()
+    # ================= ADD FORM =================
+    def open_add_form():
+        form = ctk.CTkToplevel()
+        form.geometry("400x500")
+        form.title("Add Beverage")
 
-    # Bind category change
-    def on_category_change(*args):
-        cat_text = category_var.get()
-        if cat_text == "All":
-            display_beverages("All")
-        else:
-            display_beverages(cat_text)
+        selected_image = {"path": None}
 
-    category_var.trace("w", on_category_change)
+        ctk.CTkLabel(form, text="Add Beverage",
+                     font=("Segoe UI", 24, "bold")).pack(pady=15)
+
+        name_entry = ctk.CTkEntry(form, placeholder_text="Name")
+        name_entry.pack(pady=10, padx=20, fill="x")
+
+        size_entry = ctk.CTkEntry(form, placeholder_text="Size")
+        size_entry.pack(pady=10, padx=20, fill="x")
+
+        price_entry = ctk.CTkEntry(form, placeholder_text="Price")
+        price_entry.pack(pady=10, padx=20, fill="x")
+
+        img_label = ctk.CTkLabel(form, text="No Image")
+        img_label.pack(pady=10)
+
+        def choose_image():
+            path = filedialog.askopenfilename(
+                filetypes=[("Images", "*.png *.jpg *.jpeg")]
+            )
+            if path:
+                selected_image["path"] = path
+                img_label.configure(text=os.path.basename(path))
+
+        ctk.CTkButton(form, text="Choose Image",
+                      command=choose_image).pack(pady=10)
+
+        def save():
+            name = name_entry.get()
+            size = size_entry.get()
+
+            try:
+                price = float(price_entry.get())
+            except:
+                messagebox.showerror("Error", "Invalid price")
+                return
+
+            if not name or not size:
+                messagebox.showerror("Error", "Fill all fields")
+                return
+
+            add_menu_item(name, size, price)
+
+            if selected_image["path"]:
+                save_image(selected_image["path"], name)
+
+            form.destroy()
+            refresh_products()
+
+        ctk.CTkButton(form, text="Save",
+                      fg_color="#1E6F43",
+                      command=save).pack(pady=20)
+        
+    
+    def open_edit_form(item_id, name, size_id, size, price):
+        form = ctk.CTkToplevel()
+        form.geometry("420x550")
+        form.title(f"Edit {name}")
+        form.configure(fg_color="#2C241C")
+
+        selected_image = {"path": None}
+
+        # ===== HEADER =====
+        ctk.CTkLabel(
+            form,
+            text="Edit Beverage",
+            font=("Segoe UI", 26, "bold"),
+            text_color="white"
+        ).pack(pady=(20, 10))
+
+        form_frame = ctk.CTkFrame(form, fg_color="#3A2F24", corner_radius=15)
+        form_frame.pack(fill="both", expand=True, padx=20, pady=10)
+
+        # ===== NAME =====
+        ctk.CTkLabel(form_frame, text="Beverage Name", text_color="#D0C9B8").pack(anchor="w", padx=20, pady=(15, 5))
+        name_entry = ctk.CTkEntry(form_frame, height=40)
+        name_entry.insert(0, name)
+        name_entry.pack(fill="x", padx=20)
+
+        # ===== SIZE =====
+        ctk.CTkLabel(form_frame, text="Size Label", text_color="#D0C9B8").pack(anchor="w", padx=20, pady=(15, 5))
+        size_entry = ctk.CTkEntry(form_frame, height=40)
+        size_entry.insert(0, size)
+        size_entry.pack(fill="x", padx=20)
+
+        # ===== PRICE =====
+        ctk.CTkLabel(form_frame, text="Price", text_color="#D0C9B8").pack(anchor="w", padx=20, pady=(15, 5))
+        price_entry = ctk.CTkEntry(form_frame, height=40)
+        price_entry.insert(0, str(price))
+        price_entry.pack(fill="x", padx=20)
+
+        # ===== IMAGE =====
+        ctk.CTkLabel(form_frame, text="Product Image", text_color="#D0C9B8").pack(anchor="w", padx=20, pady=(15, 5))
+
+        image_label = ctk.CTkLabel(form_frame, text="No new image selected", fg_color="#4A3C2F", height=100)
+        image_label.pack(fill="x", padx=20)
+
+        def choose_image():
+            path = filedialog.askopenfilename(filetypes=[("Images", "*.png *.jpg *.jpeg")])
+            if path:
+                selected_image["path"] = path
+                image_label.configure(text=os.path.basename(path))
+
+        ctk.CTkButton(form_frame, text="Change Image", command=choose_image).pack(pady=10)
+
+        # ===== SAVE =====
+        def save_changes():
+            new_name = name_entry.get().strip()
+            new_size = size_entry.get().strip()
+
+            try:
+                new_price = float(price_entry.get())
+            except:
+                messagebox.showerror("Error", "Invalid price")
+                return
+
+            if not new_name or not new_size:
+                messagebox.showerror("Error", "Fill all fields")
+                return
+
+            # Update database
+            update_menu_item(item_id, new_name, size_id, new_size, new_price)
+
+            # Rename image if name changed
+            old_image = os.path.join(IMAGE_FOLDER, f"{name}.png")
+            new_image = os.path.join(IMAGE_FOLDER, f"{new_name}.png")
+
+            if name != new_name and os.path.exists(old_image):
+                os.rename(old_image, new_image)
+
+            # Save new image if selected
+            if selected_image["path"]:
+                save_image(selected_image["path"], new_name)
+
+            form.destroy()
+            refresh_products()
+
+        ctk.CTkButton(
+            form,
+            text="Save Changes",
+            fg_color="#0288D1",
+            hover_color="#0277BD",
+            height=45,
+            command=save_changes
+        ).pack(pady=20, padx=20, fill="x")
 
 
-    return management_window
+    # BUTTON
+    ctk.CTkButton(right, text="Add Beverage",
+                  command=open_add_form).pack(pady=20, padx=20, fill="x")
+
+    win.after(100, refresh_products)
+
+    return win
 
 
 def create_profile_window(master, role="Cashier"):
