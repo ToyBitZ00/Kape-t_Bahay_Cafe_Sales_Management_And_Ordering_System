@@ -67,9 +67,8 @@ beverages = [
 ]
 
 
+
 #/ ================== Database Functions =================
-
-
 def create_connection():
     conn = sqlite3.connect("kape't_bahay_database.db")
     return conn
@@ -259,8 +258,6 @@ def create_employee_performance_database():
 
 
 # Management Window Database Queries
-
-
 def fetch_menu_items():
     conn = create_connection()
     cursor = conn.cursor()
@@ -1287,7 +1284,7 @@ def create_orders_window(master):
                               fg_color="#4caf50",
                               command=lambda oid=oid: [complete_order(oid), refresh_orders(parent)]).pack(side="left", padx=5)
 
-    # Define your helper functions (simplified)
+    
     def start_preparing(order_id):
         conn = create_connection()
         cursor = conn.cursor()
@@ -1311,31 +1308,31 @@ def create_orders_window(master):
 
 # Beverage management window
 def create_management_window(master):
-    win = ctk.CTkToplevel(master)
-    win.geometry("1380x920")
-    win.title("Management")
-    win.configure(fg_color="#43382F")
-    win.resizable(False, False)
+    beverage_window = ctk.CTkToplevel(master)
+    beverage_window.geometry("1380x920")
+    beverage_window.title("Management")
+    beverage_window.configure(fg_color="#43382F")
+    beverage_window.resizable(False, False)
 
-    win.grid_columnconfigure(0, weight=9) 
-    win.grid_columnconfigure(1, weight=3)
-    win.grid_rowconfigure(1, weight=1)
+    beverage_window.grid_columnconfigure(0, weight=9) 
+    beverage_window.grid_columnconfigure(1, weight=3)
+    beverage_window.grid_rowconfigure(1, weight=1)
 
     # HEADER
-    header = ctk.CTkLabel(win, text="Manage Beverages",
+    header = ctk.CTkLabel(beverage_window, text="Manage Beverages",
                           font=("Segoe UI", 36, "bold"),
                           text_color="white")
     header.grid(row=0, column=0, padx=20, pady=10, sticky="w")
 
     # LEFT PANEL
-    left = ctk.CTkScrollableFrame(win, fg_color="#2C241C")
+    left = ctk.CTkScrollableFrame(beverage_window, fg_color="#2C241C")
     left.grid(row=1, column=0, padx=(20, 0), pady=20, sticky="nsew")
     for i in range(3):
         left.grid_columnconfigure(i, weight=1, uniform="col")
     
 
     # RIGHT PANEL
-    right = ctk.CTkFrame(win, fg_color="#3A2F24")
+    right = ctk.CTkFrame(beverage_window, fg_color="#3A2F24")
     right.grid(row=1, column=1, padx=20, pady=20, sticky="nsew")
 
     # ================= REFRESH =================
@@ -1616,9 +1613,9 @@ def create_management_window(master):
     ctk.CTkButton(right, text="Add Beverage",
                   command=open_add_form).pack(pady=20, padx=20, fill="x")
 
-    win.after(100, refresh_products)
+    beverage_window.after(100, refresh_products)
 
-    return win
+    return beverage_window
 
 
 def create_profile_window(master, role="Cashier"):
@@ -1831,9 +1828,28 @@ def open_update_user_window(master):
 
 def create_sales_report_window(master):
     report_window = ctk.CTkToplevel(master)
-    report_window.geometry("800x600")
+    report_window.geometry("1200x800")
     report_window.title("Kape'Bahay Ordering System - Sales Report")
-     # Further implementation of the sales report window goes here.  
+    #report_window.resizable(False, False)
+    report_window.configure(fg_color="#d9d9d9")
+    # Further implementation of the sales report window goes here.  
+
+    left_frame = ctk.CTkFrame(report_window, fg_color="#80563f")
+    left_frame.pack(side="left", fill="both", expand=True, padx=0, pady=0)
+    
+
+    right_frame = ctk.CTkFrame(report_window, fg_color="#7c665a")
+    right_frame.pack(side="right", fill="both", expand=True, padx=0, pady=0)
+
+    # Left Frame Widgets
+
+
+
+
+
+    # Right Frame Widgets
+
+
     return report_window
  
 
