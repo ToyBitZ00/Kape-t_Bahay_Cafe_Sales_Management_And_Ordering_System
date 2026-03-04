@@ -1087,9 +1087,20 @@ def create_cart_window(master):
     
 
     # ================= RIGHT SIDE =================
+    return_to_menu_button = ctk.CTkButton(cartwindow, 
+                                         text="Return to Menu", 
+                                         font=("Segoe UI", 18, "bold"), 
+                                         width=50, 
+                                         height=50, 
+                                         corner_radius=15, 
+                                         fg_color="#1E6F43", 
+                                         hover_color="#1E6F43", 
+                                         command=lambda: show_window("profile"))
+    return_to_menu_button.grid(row=0, column=1, padx=(0, 15), pady=5, sticky="e")
+
     cart_frame = ctk.CTkFrame(cartwindow, 
                               corner_radius=15)
-    cart_frame.grid(row=0, column=1, rowspan=2, padx=(0, 15), pady=15, sticky="nsew")
+    cart_frame.grid(row=1, column=1, rowspan=2, padx=(0, 15), pady=15, sticky="nsew")
 
     cart_frame.grid_columnconfigure(0, weight=1)
 
@@ -1187,6 +1198,7 @@ def create_orders_window(master):
     # Layout: full grid
     orders_win.grid_columnconfigure(0, weight=1)
     orders_win.grid_rowconfigure(1, weight=1)
+    orders_win.grid_rowconfigure(2, weight=0)
 
     # Header
     header = ctk.CTkFrame(orders_win, fg_color="transparent")
@@ -1219,7 +1231,7 @@ def create_orders_window(master):
         fg_color="#1E6F43" if current_tab.get() == "pending" else "#555",
         command=lambda: [current_tab.set("pending"), refresh_orders(content_area)]
     )
-    pending_tab.pack(side="left", padx=5)
+    pending_tab.pack(side="left", padx=5, pady=5)
 
     completed_tab = ctk.CTkButton(
         tab_frame,
@@ -1227,7 +1239,7 @@ def create_orders_window(master):
         fg_color="#1E6F43" if current_tab.get() == "completed" else "#555",
         command=lambda: [current_tab.set("completed"), refresh_orders(content_area)]
     )
-    completed_tab.pack(side="left", padx=5)
+    completed_tab.pack(side="left", padx=5, pady=5)
 
     # Main scrollable content
     content_area = ctk.CTkScrollableFrame(orders_win, fg_color="#2e241f")
@@ -1322,6 +1334,18 @@ def create_orders_window(master):
         conn.close()
         messagebox.showinfo("Done", "Order marked as completed")
 
+    bottom_bar = ctk.CTkFrame(orders_win, fg_color="#2C241C", corner_radius=0, height=70)
+    bottom_bar.grid(row=2, column=0, sticky="ew", padx=0, pady=0)
+    bottom_bar.grid_propagate(False)
+
+    ctk.CTkButton(bottom_bar, text="← Return to Menu",
+                  width=180, height=44,
+                  fg_color="#43382F", hover_color="#5C4A35",
+                  text_color="#F0E6D3",
+                  font=("Segoe UI", 14, "bold"),
+                  corner_radius=8,
+                  command=lambda: show_window("profile")).pack(side="left", padx=20, pady=13)
+    
     # Initial load
     refresh_orders(content_area)
 
@@ -1760,6 +1784,10 @@ def create_management_window(master):
         
     ctk.CTkButton(right, text="Add Beverage",
                   command=open_add_form).pack(pady=20, padx=20, fill="x")
+    
+    return_button = ctk.CTkButton(right, text="Return to Menu",
+                                  command=lambda: show_window("profile"))
+    return_button.pack(pady=20, padx=20, fill="x")
 
     beverage_window.after(100, refresh_products)
     return beverage_window
@@ -2002,7 +2030,11 @@ def create_sales_report_window(master):
     cafe_logo.grid(row=0, column=1)
 
 
+    Middle_frame = ctk.CTkFrame(left_frame, 
+                                fg_color="#7c665a")
+    Middle_frame.grid(row=1, column=0, padx=5, pady=5, sticky="news")
 
+    # Middle Frame Widgets
 
     right_frame = ctk.CTkFrame(report_window, fg_color="#7c665a", width=650, height=800)
     right_frame.grid(row=0, column=1, padx=0, pady=0)
