@@ -187,8 +187,8 @@ def create_recovery_questions_database():
 
 
 # Used to hash passwords for security purposes.
-def hash_password(password):
-    return hashlib.sha256(password.encode()).hexdigest()
+def hash_password(data):
+    return hashlib.sha256(data.encode()).hexdigest()
 
 # Used to add a user to the database.
 def add_user(username, password, role, email):
@@ -216,6 +216,12 @@ def add_user(username, password, role, email):
     finally:
         conn.close()
 
+#add_user("mico", "cashier0001", "cashier", "mico@gmail.com")
+#add_user("paul", "cashier0002", "cashier", "paul@gmail.com")
+#add_user("amiel", "admin0001", "admin", "amiel@gmail.com")
+#add_user("ivan", "admin0002", "superAdmin", "ivan@gmail.com")
+#add_user("kyle", "admin0003", "admin", "kyle@gmail.com")
+
 
 # Used to delete users from the users table.
 def delete_user(): 
@@ -224,6 +230,8 @@ def delete_user():
 
     cursor.execute("DELETE FROM users")
     conn.commit()
+
+    cursor.execute("DELETE FROM employee_performance")
 
     cursor.execute("SELECT * FROM users")
     rows = cursor.fetchall()
@@ -234,8 +242,18 @@ def delete_user():
     conn.close()
 
 
-#delete_user()
+#elete_user()
 
+def add_recovery_questions(user_id, question_number, recovery_question, answer):
+    conn = create_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("INSERT INTO recovery_questions (user_id, question_number, recovery_question, answer) VALUES (?, ?, ?, ?)", (user_id, question_number, recovery_question, answer))
+    conn.commit()
+    conn.close()
+
+#add_recovery_questions(16, 1, "What is your favorite color?", "itim")
+#add_recovery_questions(16, 2, "What is the name of your favorite pet?", "asteroid destroyer")
 
 def verify_user(username, password):
     hashed = hash_password(password)
@@ -840,21 +858,21 @@ def create_login_window(master):
 
 
 def open_forgot_password_window(master):
-    fw = ctk.CTkToplevel(master)
-    center_window(fw, 500, 420)
-    fw.transient(master)
-    fw.grab_set()
-    fw.after(150, lambda: [fw.lift(), fw.focus_force()])
-    fw.title("Forgot Password")
-    fw.configure(fg_color="#43382F")
-    fw.resizable(False, False)
+    forgot_window = ctk.CTkToplevel(master)
+    center_window(forgot_window, 500, 420)
+    forgot_window.transient(master)
+    forgot_window.grab_set()
+    forgot_window.after(150, lambda: [forgot_window.lift(), forgot_window.focus_force()])
+    forgot_window.title("Forgot Password")
+    forgot_window.configure(fg_color="#43382F")
+    forgot_window.resizable(False, False)
 
     # ── State ──
     state = {"step": 1, "user_id": None, "questions": []}
 
     # ── Header ──
-    ctk.CTkFrame(fw, fg_color="#2C241C", height=6, corner_radius=0).pack(fill="x")
-    header = ctk.CTkFrame(fw, fg_color="#2C241C", corner_radius=0)
+    ctk.CTkFrame(forgot_window, fg_color="#2C241C", height=6, corner_radius=0).pack(fill="x")
+    header = ctk.CTkFrame(forgot_window, fg_color="#2C241C", corner_radius=0)
     header.pack(fill="x")
     title_label = ctk.CTkLabel(header, text="Account Recovery",
                                font=("Segoe UI", 22, "bold"),
@@ -862,7 +880,7 @@ def open_forgot_password_window(master):
     title_label.pack(anchor="w", padx=24, pady=16)
 
     # ── Body ──
-    body = ctk.CTkFrame(fw, fg_color="#43382F", corner_radius=0)
+    body = ctk.CTkFrame(forgot_window, fg_color="#43382F", corner_radius=0)
     body.pack(fill="both", expand=True, padx=24, pady=16)
 
     status_label = ctk.CTkLabel(body, text="",
@@ -1036,7 +1054,7 @@ def open_forgot_password_window(master):
             conn.close()
 
             messagebox.showinfo("Success", "Password updated successfully! Please log in.")
-            fw.destroy()
+            forgot_window.destroy()
 
         ctk.CTkButton(body, text="Save New Password",
                       height=44, corner_radius=8,
@@ -2414,7 +2432,7 @@ def create_profile_window(master, username, role):
                       **btn_style).grid(row=i, column=0, pady=v_pady)
 
     # ── Refresh stats on window focus ──
-    profile_window.bind("<Map>", lambda e: _refresh_for_user())
+    profile_window.bind("<Map>", lambda e: _refresh_for_user(username))
 
     profile_window.protocol("WM_DELETE_WINDOW", lambda: [set_employee_shift_off(username), master.destroy()])
     return profile_window
@@ -2629,7 +2647,7 @@ def open_recovery_setup_popup(master, user_id, username, edit_mode=False):
             e.insert(0, prefill)
         return e
 
-    # Pre-fill if editing
+    # Pre-fill questions only (never pre-fill answers since they're hashed)
     existing_q1, existing_q2 = "", ""
     if edit_mode:
         conn = create_connection()
@@ -2657,9 +2675,11 @@ def open_recovery_setup_popup(master, user_id, username, edit_mode=False):
     a2_entry = entry(7)
 
     if edit_mode:
-        ctk.CTkLabel(body, text="Leave answers blank to keep existing answers.",
+        ctk.CTkLabel(body,
+                     text="Leave answers blank to keep existing answers.",
                      font=("Segoe UI", 12),
-                     text_color="#6B5540").grid(row=8, column=0, padx=24, pady=(8, 0), sticky="w")
+                     text_color="#6B5540").grid(row=8, column=0,
+                                                padx=24, pady=(8, 0), sticky="w")
 
     error_label = ctk.CTkLabel(body, text="",
                                font=("Segoe UI", 13),
@@ -2677,29 +2697,36 @@ def open_recovery_setup_popup(master, user_id, username, edit_mode=False):
             return
 
         if edit_mode:
-            # Only update answers if provided
             conn = create_connection()
             cursor = conn.cursor()
             if a1:
+                # Answer provided — update question and hash the new answer
                 cursor.execute("""
-                    UPDATE recovery_questions SET recovery_question=?, answer=?
+                    UPDATE recovery_questions
+                    SET recovery_question=?, answer=?
                     WHERE user_id=? AND question_number=1
-                """, (q1, hash_password(a1.lower()), user_id))
+                """, (q1, hash_password(a1.strip().lower()), user_id))
             else:
+                # No answer provided — only update the question text
                 cursor.execute("""
-                    UPDATE recovery_questions SET recovery_question=?
+                    UPDATE recovery_questions
+                    SET recovery_question=?
                     WHERE user_id=? AND question_number=1
                 """, (q1, user_id))
+
             if a2:
                 cursor.execute("""
-                    UPDATE recovery_questions SET recovery_question=?, answer=?
+                    UPDATE recovery_questions
+                    SET recovery_question=?, answer=?
                     WHERE user_id=? AND question_number=2
-                """, (q2, hash_password(a2.lower()), user_id))
+                """, (q2, hash_password(a2.strip().lower()), user_id))
             else:
                 cursor.execute("""
-                    UPDATE recovery_questions SET recovery_question=?
+                    UPDATE recovery_questions
+                    SET recovery_question=?
                     WHERE user_id=? AND question_number=2
                 """, (q2, user_id))
+
             conn.commit()
             conn.close()
             messagebox.showinfo("Saved", "Recovery questions updated.")
@@ -2708,6 +2735,7 @@ def open_recovery_setup_popup(master, user_id, username, edit_mode=False):
             if not a1 or not a2:
                 error_label.configure(text="Both answers are required.")
                 return
+            # Always hash answers before saving
             save_recovery_questions(user_id, q1, a1, q2, a2)
             messagebox.showinfo("Saved", "Recovery questions set successfully.")
             popup.destroy()
@@ -2810,6 +2838,15 @@ def create_employees_window(master):
     def delete_user(user_id):
         conn = create_connection()
         cursor = conn.cursor()
+        cursor.execute("SELECT role FROM users WHERE id = ?", (user_id,))
+        row = cursor.fetchone()
+
+        if row and row[0].lower() == "superadmin" and current_user["role"].lower() != "superadmin":
+            conn.close()
+            messagebox.showerror("Access Denied",
+                                 "SuperAdmin accounts cannot be deleted.")
+            return
+
         cursor.execute("DELETE FROM employee_performance WHERE employee_id = ?", (user_id,))
         cursor.execute("DELETE FROM users WHERE id = ?", (user_id,))
         conn.commit()
@@ -2933,7 +2970,7 @@ def create_employees_window(master):
               fg_color="#0277BD", hover_color="#01579B",
               text_color="white",
               font=("Segoe UI", 16, "bold"),
-              corner_radius=8,
+              corner_radius=6,
               command=lambda uid=user_id, un=uname: open_recovery_setup_popup(
                   employees_win, uid, un, edit_mode=True)
               ).grid(row=0, column=2, rowspan=2, padx=(0, 16), pady=(20, 16))
@@ -2943,14 +2980,25 @@ def create_employees_window(master):
                           width=110, height=45,
                           fg_color="#C62828", hover_color="#922B21",
                           text_color="white",
-                          font=("Segoe UI", 16, "bold"),
-                          corner_radius=8,
-                          command=lambda uid=user_id, un=uname: confirm_delete(uid, un)
-                          ).grid(row=0, column=3, rowspan=2, padx=(0, 16), pady=(20, 16))
+                          font=("Segoe UI", 12, "bold"),
+                          corner_radius=6,
+                          command=lambda uid=user_id, un=uname, ur=role: (
+                              messagebox.showerror(
+                                  "Access Denied",
+                                  "SuperAdmin accounts cannot be deleted by Admins."
+                              ) if ur.lower() == "superadmin" and current_user["role"].lower() != "superadmin"
+                              else confirm_delete(uid, un, ur)
+                          )).grid(row=0, column=3, rowspan=2, padx=(0, 16), pady=(20, 16))
             
             
 
-    def confirm_delete(user_id, username):
+    def confirm_delete(user_id, username, role):
+        # ── Hard guard ──
+        if role.lower() == "superadmin" and current_user["role"].lower() != "superadmin":
+            messagebox.showerror("Access Denied",
+                                 "SuperAdmin accounts cannot be deleted by Admins.")
+            return
+
         popup = ctk.CTkToplevel(employees_win)
         center_window(popup, 360, 200)
         popup.transient(employees_win)
@@ -2963,7 +3011,8 @@ def create_employees_window(master):
         ctk.CTkLabel(popup, text="Delete Employee",
                      font=("Segoe UI", 22, "bold"),
                      text_color="white").pack(pady=(24, 6))
-        ctk.CTkLabel(popup, text=f"Are you sure you want to delete '{username}'?\nThis cannot be undone.",
+        ctk.CTkLabel(popup,
+                     text=f"Are you sure you want to delete '{username}'?\nThis cannot be undone.",
                      font=("Segoe UI", 13),
                      text_color="#A09080",
                      justify="center").pack(pady=(0, 20))
@@ -3175,18 +3224,56 @@ def create_employees_window(master):
 
             field_label("ROLE", 5)
             role_var = ctk.StringVar(value=role)
-            role_combo = ctk.CTkComboBox(form_frame, values=["admin", "cashier"],
-                                         variable=role_var,
-                                         state="readonly", height=44,
-                                         fg_color="#43382F",
-                                         border_color="#6B5540", border_width=2,
-                                         text_color="#F0E6D3", corner_radius=8,
-                                         button_color="#6B5540",
-                                         button_hover_color="#8B7050",
-                                         dropdown_fg_color="#43382F",
-                                         dropdown_text_color="#F0E6D3",
-                                         dropdown_hover_color="#5C4A35",
-                                         font=("Segoe UI", 14))
+
+            # ── Role options depend on who is editing and who is being edited ──
+            viewer_role = current_user["role"].lower()
+            target_role = role.lower()
+
+            # Prevent admin from editing a superadmin's role
+            if target_role == "superadmin" and viewer_role != "superadmin":
+                role_combo = ctk.CTkComboBox(form_frame, values=[role],
+                                             variable=role_var,
+                                             state="disabled", height=44,
+                                             fg_color="#43382F",
+                                             border_color="#6B5540", border_width=2,
+                                             text_color="#A09080", corner_radius=8,
+                                             button_color="#6B5540",
+                                             button_hover_color="#6B5540",
+                                             dropdown_fg_color="#43382F",
+                                             dropdown_text_color="#F0E6D3",
+                                             dropdown_hover_color="#5C4A35",
+                                             font=("Segoe UI", 14))
+                # Warning label shown below combo
+                ctk.CTkLabel(form_frame, text="SuperAdmin role cannot be changed by Admin.",
+                             font=("Segoe UI", 12),
+                             text_color="#EF9A50").grid(row=6, column=0,
+                                                        sticky="w", padx=24, pady=(2, 0))
+            elif viewer_role == "superadmin":
+                role_combo = ctk.CTkComboBox(form_frame, values=["superadmin", "admin", "cashier"],
+                                             variable=role_var,
+                                             state="readonly", height=44,
+                                             fg_color="#43382F",
+                                             border_color="#6B5540", border_width=2,
+                                             text_color="#F0E6D3", corner_radius=8,
+                                             button_color="#6B5540",
+                                             button_hover_color="#8B7050",
+                                             dropdown_fg_color="#43382F",
+                                             dropdown_text_color="#F0E6D3",
+                                             dropdown_hover_color="#5C4A35",
+                                             font=("Segoe UI", 14))
+            else:
+                role_combo = ctk.CTkComboBox(form_frame, values=["admin", "cashier"],
+                                             variable=role_var,
+                                             state="readonly", height=44,
+                                             fg_color="#43382F",
+                                             border_color="#6B5540", border_width=2,
+                                             text_color="#F0E6D3", corner_radius=8,
+                                             button_color="#6B5540",
+                                             button_hover_color="#8B7050",
+                                             dropdown_fg_color="#43382F",
+                                             dropdown_text_color="#F0E6D3",
+                                             dropdown_hover_color="#5C4A35",
+                                             font=("Segoe UI", 14))
             role_combo.grid(row=6, column=0, sticky="ew", padx=24)
 
             field_label("NEW PASSWORD  (leave blank to keep current)", 7)
@@ -3206,6 +3293,11 @@ def create_employees_window(master):
                 new_role  = role_var.get()
                 new_pw    = pw_entry.get()
                 new_cpw   = cpw_entry.get()
+
+                if role.lower() == "superadmin" and current_user["role"].lower() != "superadmin":
+                    error_label.configure(text="⚠  Access denied. Cannot edit a SuperAdmin account.",
+                                          text_color="#EF9A50")
+                    return
 
                 if not new_name or not new_email:
                     error_label.configure(text="Username and email are required.",
@@ -3386,33 +3478,73 @@ def show_window(name):
 root.mainloop()
 
 
-# RECOVERY QUESTIONS
+# USER ACCOUNTS AND RECOVERY QUESTIONS
+
+# username: mico
+# password: admin0001
+# role:     cashier  
+# email:    mic0@gmail.com
+#
+# Recovery Question 1
+# Question: 
+# Asnwer:
+#
+# Recovery Question 2
+# Question:
+# Answer:
+
+
+# username: paul
+# password: admin0002
+# role:     cashier
+# email:    pa6308191@gmail.com
+#
+# Recovery Question 1
+# Question: 
+# Asnwer:
+#
+# Recovery Question 2
+# Question:
+# Answer:
+
+
 # username: amiel
 # password: admin0003
-# role: admin
+# role:     admin
+# email:    amiel@gmail.com
 #
+# Recovery Question 1
+# Question: 
+# Asnwer:   
 #
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
+# Recovery Question 2
+# Question: 
+# Answer:   
 
 
-# Isang beses lang to irun tapos comment na or delete na para hindi maulit ulit dagdag ng users.
-#add_user("mico", "admin0001", "cashier", "mic0@gmail.com")
-#add_user("paul", "admin0002", "cashier", "pa6308191@gmail.com")
-#add_user("amiel", "admin0003", "admin", "amiel@gmail.com")
-#add_user("ivan", "admin0004", "admin", "ivan@gmail.com")
-#add_user("kyle", "admin0005", "admin", "kyle@gmail.com")
+# username: ivan    
+# password: admin0004
+# role:     superAdmin
+# email:    ivan@gmail.com
+#
+# Recovery Question 1
+# Question: What is your favorite color?
+# Asnwer:   blue
+#
+# Recovery Question 2
+# Question: What is the name of your favorite pet?
+# Answer:   badongs
+
+
+# username: kyle
+# password: 
+# role:     admin
+# email:    kyle@gmail.com
+#
+# Recovery Question 1
+# Question: 
+# Asnwer:
+#
+# Recovery Question 2
+# Question:
+# Answer:
